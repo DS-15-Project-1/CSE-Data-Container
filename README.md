@@ -1,6 +1,5 @@
 # Co2 Sequestration Seismic Data_Extraction
 
-This project will
 This project aims to facilitate the extraction, processing, and analysis of CO2 sequestration data. It provides tools to manage large datasets and offers a streamlined workflow for data scientists and engineers working in carbon capture and storage.
 
 ## Setup
@@ -9,7 +8,7 @@ This project aims to facilitate the extraction, processing, and analysis of CO2 
 2. Run `docker-compose up --build`
 3. Clone the repository to your local machine using the command:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/DS-15-Project-1/Co2-Sec-Extraction-Container.git
    ```
 4. Navigate to the project directory.
 5. Run `docker-compose up --build` to set up the necessary environment and services.
