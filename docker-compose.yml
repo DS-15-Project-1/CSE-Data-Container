@@ -1,17 +1,22 @@
+version: "3"
+
 services:
-  jupyter:
-    container_name: jpynbook
-    image: jpynbook
+  obspy-dask:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: obspy-dask-container
     ports:
-      - "8888:8888"
+      - "8888:8888" # Dask dashboard
+      - "8786:8786" # Dask scheduler
+      - "80:80" # Nginx
     volumes:
-      - ../cohort-15-data-science:/notebooks
+      - ./data:/app/data
     environment:
-      - GRANT_SUDO=yes
-    user: root
-
-volumes:
-  notebooks:
+      - DASK_SCHEDULER_ADDRESS=0.0.0.0:8786
+    command: >
+      sh -c "
+        nginx &&
+        dask-scheduler --host 0.0.0.0 --port 8786 &&
+        dask-worker --nprocs 4 --nthreads 2 --memory-limit 4GB --host 0.0.0.0 0.0.0.0:8786
+      "

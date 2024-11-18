@@ -1,6 +1,6 @@
 # Co2 Sequestration Seismic Data_Extraction
 
-This project aims to facilitate the extraction, processing, and analysis of CO2 sequestration data. It provides tools to manage large datasets and offers a streamlined workflow for data scientists and engineers working in carbon capture and storage.
+This project aims to facilitate the extraction, processing, and analysis of CO2 sequestration data. It provides tools to manage large datasets and offers a streamlined workflow for the task.
 
 ## Setup
 
@@ -10,16 +10,33 @@ This project aims to facilitate the extraction, processing, and analysis of CO2 
    ```bash
    git clone https://github.com/DS-15-Project-1/Co2-Sec-Extraction-Container.git
    ```
-4. Navigate to the project directory.
-5. Run `docker-compose up --build` to set up the necessary environment and services.
 
-## Usage
+## Using the Container
 
-1. Access the processed data at `http://localhost:8080/processed_data.h5`
-2. Use Dask on your client machine to read the data:
+1. Dockerfile: Contains the instructions for building the Docker image.
 
-3. Once the setup is complete, you can access the processed data at:
-   ```plaintext
-   http://localhost:8080/processed_data.h5
-   ```
-4. Use Dask on your client machine to read and interact with the processed data. Dask enables parallel computing and offers a scalable solution for handling large datasets, improving data processing efficiency.
+2. docker-compose.yml: Defines the services and configuration for running the container.
+
+3. src/main.py: The main Python script that reads miniSEED files and processes them.
+
+4. nginx/nginx.conf: Configuration file for the Nginx server.
+
+5. data/: Directory where you'll place your miniSEED files.
+
+6. .gitignore: Specifies files and directories that Git should ignore.
+
+7. README.md: Project documentation.
+
+This structure provides a streamlined environment for reading miniSEED files with ObsPy, processing them with Dask, and serving the results through Nginx. The container will:
+
+1. Read miniSEED files from the `/app/data/` directory
+2. Process the data using ObsPy and Dask
+3. Save the processed data as a CSV file in the `/app/data/` directory
+4. Serve the CSV file through Nginx
+
+To use this setup:
+
+1. Place your miniSEED files in the `data/` directory.
+2. Run `docker-compose up --build` to start the container.
+3. The container will read the miniSEED file, convert it to a CSV, and save it in the `/app/data/` directory.
+4. You can access the CSV file through the Nginx server at `http://localhost/processed_data.csv`.

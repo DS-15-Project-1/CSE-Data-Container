@@ -1,12 +1,9 @@
 project_root/
 ├── Dockerfile
 ├── docker-compose.yml
+├── nginx.conf
 ├── src/
 │ ├── **init**.py
-│ ├── main.py
-│ ├── data_reader.py
-│ └── data_processor.py
-├── nginx/
-│ └── nginx.conf
+│ └── main.py
 ├── .gitignore
 └── README.md
