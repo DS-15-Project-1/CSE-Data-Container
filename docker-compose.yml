@@ -1,0 +1,17 @@
+services:
+  jupyter:
+    container_name: jpynbook
+    image: jpynbook
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8888:8888"
+    volumes:
+      - ../cohort-15-data-science:/notebooks
+    environment:
+      - GRANT_SUDO=yes
+    user: root
+
+volumes:
+  notebooks:
