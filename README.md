@@ -21,7 +21,7 @@ This project aims to facilitate the extraction, processing, and analysis of CO2 
 
 4. nginx/nginx.conf: Configuration file for the Nginx server.
 
-5. data/: Directory where you'll place your miniSEED files.
+5. data:(TODO) needs specification.
 
 6. .gitignore: Specifies files and directories that Git should ignore.
 
@@ -36,7 +36,7 @@ This structure provides a streamlined environment for reading miniSEED files wit
 
 To use this setup:
 
-1. Place your miniSEED files in the `data/` directory.
+1. Set mount point on server at `data/` directory.
 2. Run `docker-compose up --build` to start the container.
 3. The container will read the miniSEED file, convert it to a CSV, and save it in the `/app/data/` directory.
-4. You can access the CSV file through the Nginx server at `http://localhost/processed_data.csv`.
+4. You can access the CSV file through the Nginx server at `http://localhost/processed_data.csv`. (TODO needs specification)
