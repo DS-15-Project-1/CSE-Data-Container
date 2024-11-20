@@ -41,7 +41,6 @@ services:
       - /mnt/code/output:/app/output
     command: ["python", "/app/src/main.py", "/app/data/Run_7/Run_7/2021_01_21", "/app/output"]
 
-<<<<<<< HEAD
   nginx:
     image: nginx:latest
     container_name: nginx-server
@@ -50,14 +49,3 @@ services:
     volumes:
       - /mnt/code/output:/usr/share/nginx/html
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-
-=======
-nginx:
-  image: nginx:latest
-  container_name: nginx-server
-  ports:
-    - "8080:80"
-  volumes:
-    - /mnt/code/output:/usr/share/nginx/html
-    - ./nginx.conf:/etc/nginx/nginx.conf:ro
->>>>>>> c08b37bb425f720c7ed3f41fd62cc5be33c38801
