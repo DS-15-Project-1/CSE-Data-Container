@@ -1,37 +1,57 @@
 import os
 import sys
 from obspy import read
-import dask.dataframe as dd
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
-import pyarrow.feather as pf
+import numpy as np
 
 def read_miniseed(file_path):
     stream = read(file_path)
-    df = pd.DataFrame(stream[0].data)
-    ddf = dd.from_pandas(df, npartitions=4)
-    return ddf
+    return stream
 
 def process_miniseed_file(file_path, output_directory):
-    ddf = read_miniseed(file_path)
-    df = ddf.compute()
+    stream = read_miniseed(file_path)
     
-    base_name = os.path.splitext(os.path.basename(file_path))[0]
-    
-    output_csv_file = os.path.join(output_directory, f"{base_name}.csv")
-    output_parquet_file = os.path.join(output_directory, f"{base_name}.parquet")
-    output_feather_file = os.path.join(output_directory, f"{base_name}.feather")
-    output_json_file = os.path.join(output_directory, f"{base_name}.json")
-    
-    # Save as CSV
-    df.to_csv(output_csv_file, index=False)
-    
-    # Save as Parquet
-    pq.write_table(pa.Table.from_pandas(df), output_parquet_file)
-    
-    # Save as Feather
-    pf.write_file(pa.Table.from_pandas(df), output_feather_file)
+    for trace in stream:
+        data = trace.data
+        sampling_rate = trace.stats.sampling_rate
+        start_time = trace.stats.starttime
+        end_time = trace.stats.endtime
+        channel = trace.stats.channel
+        station = trace.stats.station
+        network = trace.stats.network
+        location = trace.stats.location
+        
+        # Create time array
+        time_array = pd.date_range(start_time.datetime, end_time.datetime, periods=len(data))
+        
+        # Create DataFrame
+        df = pd.DataFrame({
+            'time': time_array,
+            'data': data,
+            'sampling_rate': sampling_rate,
+            'channel': channel,
+            'station': station,
+            'network': network,
+            'location': location
+        })
+        
+        # Apply scaling if necessary
+        # Note: You may need to adjust this based on your specific data
+        scaling_factor = trace.stats.calib
+        if scaling_factor != 1.0:
+            df['scaled_data'] = df['data'] * scaling_factor
+        
+        # Create output file name
+        base_name = f"{network}_{station}_{location}_{channel}_{start_time.strftime('%Y%m%d_%H%M%S')}"
+        output_parquet_file = os.path.join(output_directory, f"{base_name}.parquet")
+        
+        # Save as Parquet
+        table = pa.Table.from_pandas(df)
+        pq.write_file(table, output_parquet_file)
+        
+        print(f"Processed and saved: {output_parquet_file}")
 
 def main(input_directory, output_directory):
     for filename in os.listdir(input_directory):
