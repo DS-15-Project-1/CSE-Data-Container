@@ -13,7 +13,6 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git \
     build-essential \
-    libssl3 \
     libgl1-mesa-glx \
     libqt5gui5 \
     libnotify4 \
