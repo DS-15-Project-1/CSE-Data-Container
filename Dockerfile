@@ -12,13 +12,9 @@ RUN apt-get update && apt-get install -y \
     curl \
     unzip \
     git \
-    build-essential \
-    libgl1-mesa-glx \
-    libqt5gui5 \
     libnotify4 \
     libnss3 \
     xdg-utils \
-    x11-apps \
     xvfb \
     nginx \
     && apt-get clean \
