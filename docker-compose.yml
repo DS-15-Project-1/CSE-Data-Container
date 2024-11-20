@@ -8,7 +8,7 @@
        ports:
          - "8888:8888" # Dask dashboard
          - "8786:8786" # Dask scheduler
-         - "80:80" # Nginx
+         - "8080:8080" # Nginx
        volumes:
          - /mnt/data:/app/data
        environment:
