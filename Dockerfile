@@ -31,4 +31,4 @@ RUN mkdir -p /var/cache/nginx && chown -R nginx:nginx /var/cache/nginx
 RUN chown -R nginx:nginx /var/log/nginx
 
 # Set the default command to run when starting the container
-CMD ["sh", "-c", "nginx && python -m dask.distributed --nprocs 4 --nthreads 2 --memory-limit 4GB --interface 0.0.0.0"]
+CMD ["sh", "-c", "nginx && dask-scheduler --host 0.0.0.0 --port 8786"]
