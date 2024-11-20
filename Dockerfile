@@ -1,4 +1,4 @@
-FROM ghcr.io/dask/dask:latest
+FROM python:3.12-slim
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
@@ -6,16 +6,12 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Set the working directory
 WORKDIR /app
 
-# Copy the src directory
-COPY src/ /app/src/
-
 # Install additional system dependencies
 RUN apt-get update && apt-get install -y \
     wget \
     curl \
     unzip \
     git \
-    nginx \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -26,8 +22,6 @@ RUN pip install \
     numpy \
     pyarrow
 
-RUN pip install --no-cache-dir --upgrade pyarrow
-
 # Copy Nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 
@@ -37,4 +31,4 @@ RUN mkdir -p /var/cache/nginx && chown -R nginx:nginx /var/cache/nginx
 RUN chown -R nginx:nginx /var/log/nginx
 
 # Set the default command to run when starting the container
-CMD ["sh", "-c", "nginx && dask-scheduler --host 0.0.0.0 --port 8786"]
+CMD ["sh", "-c", "nginx"]
