@@ -1,21 +1,30 @@
-   version: "3"
-   services:
-     obspy-dask:
-       build:
-         context: .
-         dockerfile: Dockerfile
-       container_name: obspy-dask-container
-       ports:
-         - "8888:8888" # Dask dashboard
-         - "8786:8786" # Dask scheduler
-         - "8080:8080" # Nginx
-       volumes:
-         - /mnt/data:/app/data
-       environment:
-         - DASK_SCHEDULER_ADDRESS=0.0.0.0:8786
-       command: >
-         sh -c "
-           nginx &&
-           dask-scheduler --host 0.0.0.0 --port 8786 &&
-           dask-worker --nprocs 4 --nthreads 2 --memory-limit 4GB --host 0.0.0.0 0.0.0.0:8786
-         "
+version: "3"
+services:
+  obspy-dask-scheduler:
+    image: ghcr.io/dask/dask:latest
+    container_name: obspy-dask-scheduler
+    ports:
+      - "8786:8786" # Dask scheduler
+      - "8787:8787" # Dask dashboard
+    volumes:
+      - /mnt/data:/app/data
+    command: ["dask-scheduler", "--host", "0.0.0.0", "--port", "8786"]
+
+  obspy-dask-worker:
+    image: ghcr.io/dask/dask:latest
+    container_name: obspy-dask-worker
+    depends_on:
+      - obspy-dask-scheduler
+    volumes:
+      - /mnt/data:/app/data
+    command: ["dask-worker", "obspy-dask-scheduler:8786", "--nprocs", "4", "--nthreads", "2", "--memory-limit", "4GB"]
+
+  obspy-dask-notebook:
+    image: ghcr.io/dask/dask-notebook:latest
+    container_name: obspy-dask-notebook
+    ports:
+      - "8888:8888" # Jupyter notebook
+    volumes:
+      - /mnt/data:/app/data
+    depends_on:
+      - obspy-dask-scheduler
