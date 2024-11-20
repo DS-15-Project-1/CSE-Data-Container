@@ -23,7 +23,8 @@ RUN apt-get update && apt-get install -y \
 RUN pip install \
     obspy \
     pandas \
-    numpy
+    numpy \
+    pyarrow
 
 RUN pip install --no-cache-dir pyarrow==16.1.0
 
