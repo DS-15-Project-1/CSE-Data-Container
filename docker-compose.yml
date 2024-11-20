@@ -8,7 +8,7 @@ services:
       - "8787:8787" # Dask dashboard
     volumes:
       - /mnt/data:/app/data
-    command: ["dask-scheduler", "--host", "0.0.0.0", "--port", "8786"]
+      - /mnt/code/output:/app/output
 
   obspy-dask-worker:
     image: ghcr.io/dask/dask:latest
@@ -17,7 +17,7 @@ services:
       - obspy-dask-scheduler
     volumes:
       - /mnt/data:/app/data
-    command: ["dask-worker", "obspy-dask-scheduler:8786", "--nprocs", "4", "--nthreads", "2", "--memory-limit", "4GB"]
+      - /mnt/code/output:/app/output
 
   obspy-dask-notebook:
     image: ghcr.io/dask/dask-notebook:latest
@@ -26,14 +26,25 @@ services:
       - "8888:8888" # Jupyter notebook
     volumes:
       - /mnt/data:/app/data
+      - /mnt/code/output:/app/output
     depends_on:
       - obspy-dask-scheduler
 
-        obspy-data-processor:
+  obspy-data-processor:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: obspy-data-processor
     volumes:
       - /mnt/data:/app/data
-    command: ["python", "/app/src/main.py"]
+      - /mnt/code/output:/app/output
+    command: ["python", "/app/src/main.py", "/app/data/Run_7/Run_7/2021_01_21", "/app/output"]
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx-server
+    ports:
+      - "8080:80"
+    volumes:
+      - /mnt/code/output:/usr/share/nginx/html
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
