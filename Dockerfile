@@ -27,7 +27,7 @@ COPY nginx.conf /etc/nginx/nginx.conf
 
 # Set up Nginx to run as a non-root user
 RUN useradd -m nginx
-RUN chown -R nginx:nginx /var/cache/nginx
+RUN mkdir -p /var/cache/nginx && chown -R nginx:nginx /var/cache/nginx
 RUN chown -R nginx:nginx /var/log/nginx
 
 # Set the default command to run when starting the container
