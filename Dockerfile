@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Set the working directory
 WORKDIR /app
 
-# Copy the src directoy
+# Copy the src directory
 COPY src/ /app/src/
 
 # Install additional system dependencies
