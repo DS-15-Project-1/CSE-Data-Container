@@ -28,3 +28,12 @@ services:
       - /mnt/data:/app/data
     depends_on:
       - obspy-dask-scheduler
+
+        obspy-data-processor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: obspy-data-processor
+    volumes:
+      - /mnt/data:/app/data
+    command: ["python", "/app/src/main.py"]
