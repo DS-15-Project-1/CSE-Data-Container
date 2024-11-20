@@ -15,10 +15,9 @@ services:
     container_name: obspy-dask-worker
     depends_on:
       - obspy-dask-scheduler
-  volumes:
-      - "/mnt/data:/app/data"
-      - "/mnt/code/output:/app/output"
-
+    volumes:
+      - /mnt/data:/app/data
+      - /mnt/code/output:/app/output
 
   obspy-dask-notebook:
     image: ghcr.io/dask/dask-notebook:latest
@@ -41,11 +40,11 @@ services:
       - /mnt/code/output:/app/output
     command: ["python", "/app/src/main.py", "/app/data/Run_7/Run_7/2021_01_21", "/app/output"]
 
-nginx:
-  image: nginx:latest
-  container_name: nginx-server
-  ports:
-    - "8080:80"
-  volumes:
-    - /mnt/code/output:/usr/share/nginx/html
-    - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  nginx:
+    image: nginx:latest
+    container_name: nginx-server
+    ports:
+      - "8080:80"
+    volumes:
+      - /mnt/code/output:/usr/share/nginx/html
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
