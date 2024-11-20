@@ -26,7 +26,7 @@ RUN pip install \
     numpy \
     pyarrow
 
-RUN pip update --no-cache-dir pyarrow
+RUN pip install --no-cache-dir --upgrade pyarrow
 
 # Copy Nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
