@@ -41,8 +41,11 @@ COPY nginx.conf /etc/nginx/nginx.conf
 
 # Set up Nginx to run as a non-root user
 RUN useradd -m nginx
+RUN mkdir -p /var/cache/nginx
 RUN chown -R nginx:nginx /var/cache/nginx
 RUN chown -R nginx:nginx /var/log/nginx
+
+COPY app/data /app/data
 
 # Set the default command to run when starting the container
 CMD ["sh", "-c", "nginx && python -m dask.distributed --nprocs 4 --nthreads 2 --memory-limit 4GB --interface 0.0.0.0"]
