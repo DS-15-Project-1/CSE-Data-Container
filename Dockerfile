@@ -23,7 +23,8 @@ RUN apt-get update && apt-get install -y \
 RUN pip install \
     obspy \
     pandas \
-    numpy
+    numpy \
+    pyarrow
 
 # Copy Nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
