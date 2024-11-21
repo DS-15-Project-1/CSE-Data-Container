@@ -1,10 +1,11 @@
-version: "3"
-services:
-  data-container:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    volumes:
-      - /mnt/code:/app/code
+version: '3'
 
-    command: ["sh", "-c", "sleep infinity"]
+services:
+  nginx:
+    build: .
+    container_name: nginx-server
+    ports:
+      - "8080:80"
+    volumes:
+      - /mnt/code/CSE-Data-Container:/usr/share/nginx/html/mnt
+    command: ["nginx", "-g", "daemon off;"]

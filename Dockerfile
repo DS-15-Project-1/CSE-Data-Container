@@ -1,26 +1,14 @@
-FROM python:3.12-slim
-
-# Set environment variables
-ENV DEBIAN_FRONTEND=noninteractive
+# Use the official Nginx image as a base
+FROM nginx:latest
 
 # Set the working directory
-WORKDIR /app
+WORKDIR /usr/share/nginx/html
 
-# Install additional system dependencies
-RUN apt-get update && apt-get install -y \
-    wget \
-    curl \
-    unzip \
-    git \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# Copy the custom nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
 
-# Install additional Python packages
-RUN pip install \
-    obspy \
-    pandas \
-    numpy \
-    pyarrow
+# Expose port 80
+EXPOSE 8080
 
 # Set the default command to run when starting the container
-CMD ["sh", "-c", "nginx"]
+CMD ["nginx", "-g", "daemon off;"]
