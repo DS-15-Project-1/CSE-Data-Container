@@ -7,5 +7,5 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - /mnt/code/CSE-Data-Container:/usr/share/nginx/html/mnt
+      - /mnt/:/usr/share/nginx/html/mnt/
     command: ["nginx", "-g", "daemon off;"]

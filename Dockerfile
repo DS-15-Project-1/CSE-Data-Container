@@ -7,7 +7,7 @@ WORKDIR /usr/share/nginx/html
 # Copy the custom nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Expose port 80
+# Expose port 8080
 EXPOSE 8080
 
 # Set the default command to run when starting the container
