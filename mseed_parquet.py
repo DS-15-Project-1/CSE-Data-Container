@@ -5,27 +5,32 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 def convert_miniseed_to_parquet(input_file, output_file):
-    # Read the miniseed file
-    st = obspy.read(input_file)
+    print(f"Converting: {input_file}")
+    try:
+        # Read the miniseed file
+        st = obspy.read(input_file)
 
-    # Convert to DataFrame
-    data = []
-    for tr in st:
-        data.append({
-            'network': tr.stats.network,
-            'station': tr.stats.station,
-            'location': tr.stats.location,
-            'channel': tr.stats.channel,
-            'starttime': tr.stats.starttime,
-            'endtime': tr.stats.endtime,
-            'sampling_rate': tr.stats.sampling_rate,
-            'data': tr.data.tolist()
-        })
+        # Convert to DataFrame
+        data = []
+        for tr in st:
+            data.append({
+                'network': tr.stats.network,
+                'station': tr.stats.station,
+                'location': tr.stats.location,
+                'channel': tr.stats.channel,
+                'starttime': tr.stats.starttime,
+                'endtime': tr.stats.endtime,
+                'sampling_rate': tr.stats.sampling_rate,
+                'data': tr.data.tolist()
+            })
 
-    df = pd.DataFrame(data)
+        df = pd.DataFrame(data)
 
-    # Write to Parquet
-    pq.write_file(pa.Table.from_pandas(df), output_file)
+        # Write to Parquet
+        pq.write_file(pa.Table.from_pandas(df), output_file)
+        print(f"Successfully converted: {input_file} -> {output_file}")
+    except Exception as e:
+        print(f"Error converting {input_file}: {str(e)}")
 
 # Set the input and output directories
 input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019"
@@ -36,6 +41,7 @@ os.makedirs(output_dir, exist_ok=True)
 
 # Iterate over the directory structure
 for root, dirs, files in os.walk(input_dir):
+    print(f"Searching for mseed files in: {root}")
     for file in files:
         if file.endswith(".mseed"):
             input_file = os.path.join(root, file)
@@ -47,9 +53,5 @@ for root, dirs, files in os.walk(input_dir):
             
             # Convert the file
             convert_miniseed_to_parquet(input_file, output_file)
-            
-            print(f"Converted: {input_file} -> {output_file}")
 
 print("Conversion complete!")
-print(f"Searching for mseed files in: {input_dir}")
-print(f"Found {len(files)} files in {root}")
