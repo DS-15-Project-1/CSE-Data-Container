@@ -11,7 +11,7 @@ services:
       - type: bind
         source: /mnt/code/output
         target: /mnt/code/output
-    command: python /app/convert_miniseed_to_parquet.py
+    command: python /app/mseed_parquet.py
 
 volumes:
   input_data:
