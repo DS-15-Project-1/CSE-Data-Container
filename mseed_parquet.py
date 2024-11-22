@@ -5,7 +5,8 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 def convert_miniseed_to_parquet(input_file, output_file):
-    print(f"Converting: {input_file}")
+   print("Script started")
+   print(f"Converting: {input_file}")
     try:
         # Read the miniseed file
         st = obspy.read(input_file)
