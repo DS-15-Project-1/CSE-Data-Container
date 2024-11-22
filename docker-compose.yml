@@ -5,12 +5,8 @@ services:
     build: .
     container_name: "miniseed-to-parquet-converter"
     volumes:
-      - type: bind
-        source: /mnt
-        target: /mnt
-      - type: bind
-        source: /mnt/code/output
-        target: /mnt/code/output
+      - /mnt:/mnt
+      - /mnt/code/output:/mnt/code/output
     command: python /app/mseed_parquet.py
 
 volumes:
