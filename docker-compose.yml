@@ -1,11 +1,28 @@
 version: '3'
 
 services:
-  nginx:
+  converter:
     build: .
-    container_name: nginx-server
-    ports:
-      - "8080:80"
+    container_name: miniseed-to-parquet-converter
     volumes:
-      - /mnt/:/usr/share/nginx/html/mnt/
-    command: ["nginx", "-g", "daemon off;"]
+      - type: bind
+        source: /mnt
+        target: /mnt
+      - type: bind
+        source: /mnt/code/output
+        target: /mnt/code/output
+    command: python /app/convert_miniseed_to_parquet.py
+
+volumes:
+  input_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt
+  output_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/code/output
