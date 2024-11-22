@@ -30,7 +30,7 @@ def convert_miniseed_to_parquet(input_file, output_file):
         # Write to Parquet
         pq.write_file(pa.Table.from_pandas(df), output_file)
         print(f"Successfully converted: {input_file} -> {output_file}")
-    except Exception as e:
+   except Exception as e:
         print(f"Error converting {input_file}: {str(e)}")
 
 # Set the input and output directories
