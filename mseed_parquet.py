@@ -51,3 +51,5 @@ for root, dirs, files in os.walk(input_dir):
             print(f"Converted: {input_file} -> {output_file}")
 
 print("Conversion complete!")
+print(f"Searching for mseed files in: {input_dir}")
+print(f"Found {len(files)} files in {root}")
