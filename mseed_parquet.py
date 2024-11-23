@@ -63,7 +63,7 @@ def convert_file_to_parquet(input_file, output_file):
 
 # Set the input and output directories
 input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZB"
-output_dir = "/mnt/code/output"
+output_dir = "/mnt/code/output/ZB"
 
 # Create the output directory if it doesn't exist
 os.makedirs(output_dir, exist_ok=True)
