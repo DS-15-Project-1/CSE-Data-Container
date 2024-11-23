@@ -4,9 +4,14 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 import traceback
+from datetime import datetime
 
 def convert_file_to_parquet(input_file, output_file):
     print(f"Attempting to convert: {input_file}")
+    # Add this at the beginning of your convert_file_to_parquet function
+    print(f"Processing file: {input_file}")
+    print(f"Output will be: {output_file}")
+
     try:
         # Debug logging
         print(f"Input file: {input_file}")
@@ -22,8 +27,6 @@ def convert_file_to_parquet(input_file, output_file):
         # Read the file
         st = read(input_file)
         print(f"Successfully read: {input_file}")
-        print(f"Number of traces: {len(st)}")
-        print(f"Number of samples: {len(st[0].data)}")
         
         # Extract metadata
         network = st[0].stats.network
@@ -33,6 +36,10 @@ def convert_file_to_parquet(input_file, output_file):
         start_time = st[0].stats.starttime
         end_time = st[0].stats.endtime
         sampling_rate = st[0].stats.sampling_rate
+        
+        # Convert UTCDateTime to datetime
+        start_time = datetime.fromtimestamp(start_time.timestamp)
+        end_time = datetime.fromtimestamp(end_time.timestamp)
         
         # Create DataFrame
         df = pd.DataFrame({
@@ -74,5 +81,8 @@ for root, dirs, files in os.walk(input_dir):
         
         # Convert the file
         convert_file_to_parquet(input_file, output_file)
+        
+        # Add this at the end of your main loop
+print(f"Processed {input_file}")
 
 print("Conversion complete!")
