@@ -32,7 +32,7 @@ def convert_file_to_parquet(input_file, output_file):
         end_time = st[0].stats.endtime
         sampling_rate = st[0].stats.sampling_rate
         
-        # Create DataFrame
+         # Create DataFrame
         df = pd.DataFrame({
             'network': [network],
             'station': [station],
