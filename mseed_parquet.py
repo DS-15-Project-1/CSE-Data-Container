@@ -5,7 +5,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import traceback
 
-def convert_miniseed_to_parquet(input_file, output_file):
+def convert_file_to_parquet(input_file, output_file):
     print(f"Attempting to convert: {input_file}")
     try:
         # Debug logging
@@ -19,8 +19,8 @@ def convert_miniseed_to_parquet(input_file, output_file):
             print(f"File size: {os.path.getsize(input_file)} bytes")
             print(f"First few bytes: {f.read(20)}")
         
-        # Read the miniseed file
-        st = read(input_file, format="MSEED")
+        # Read the file
+        st = read(input_file)
         print(f"Successfully read: {input_file}")
         
         # Extract metadata
@@ -51,7 +51,6 @@ def convert_miniseed_to_parquet(input_file, output_file):
         print(f"Error converting {input_file}: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
 
-
 # Set the input and output directories
 input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019"
 output_dir = "/mnt/code/output"
@@ -61,17 +60,16 @@ os.makedirs(output_dir, exist_ok=True)
 
 # Iterate over the directory structure
 for root, dirs, files in os.walk(input_dir):
-    print(f"Searching for mseed files in: {root}")
+    print(f"Searching for files in: {root}")
     for file in files:
-        if file.endswith(".D"):
-            input_file = os.path.join(root, file)
-            rel_path = os.path.relpath(input_file, input_dir)
-            output_file = os.path.join(output_dir, rel_path).replace(".D", ".parquet")
-            
-            # Create the output directory if it doesn't exist
-            os.makedirs(os.path.dirname(output_file), exist_ok=True)
-            
-            # Convert the file
-            convert_miniseed_to_parquet(input_file, output_file)
+        input_file = os.path.join(root, file)
+        rel_path = os.path.relpath(input_file, input_dir)
+        output_file = os.path.join(output_dir, rel_path).replace(os.path.splitext(file)[1], ".parquet")
+        
+        # Create the output directory if it doesn't exist
+        os.makedirs(os.path.dirname(output_file), exist_ok=True)
+        
+        # Convert the file
+        convert_file_to_parquet(input_file, output_file)
 
 print("Conversion complete!")
