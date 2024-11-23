@@ -4,6 +4,7 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 import traceback
+from datetime import datetime
 
 def convert_file_to_parquet(input_file, output_file):
     print(f"Attempting to convert: {input_file}")
@@ -32,7 +33,11 @@ def convert_file_to_parquet(input_file, output_file):
         end_time = st[0].stats.endtime
         sampling_rate = st[0].stats.sampling_rate
         
-         # Create DataFrame
+        # Convert UTCDateTime to datetime
+        start_time = datetime.fromtimestamp(start_time.timestamp)
+        end_time = datetime.fromtimestamp(end_time.timestamp)
+        
+        # Create DataFrame
         df = pd.DataFrame({
             'network': [network],
             'station': [station],
