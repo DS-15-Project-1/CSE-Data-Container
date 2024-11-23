@@ -53,7 +53,7 @@ def convert_miniseed_to_parquet(input_file, output_file):
 
 
 # Set the input and output directories
-input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/*/*/*"
+input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019"
 output_dir = "/mnt/code/output"
 
 # Create the output directory if it doesn't exist
