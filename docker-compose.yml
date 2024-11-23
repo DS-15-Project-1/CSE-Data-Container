@@ -10,7 +10,7 @@ services:
     command: python /app/mseed_parquet.py
   converter-2:
     build: .
-    container_name: "miniseed-to-parquet-converter"
+    container_name: "miniseed-to-parquet-converter-2"
     volumes:
       - /mnt:/mnt
       - /mnt/code/output:/mnt/code/output
