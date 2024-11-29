@@ -1,5 +1,5 @@
-# Start with a Python base image
-FROM python:3.12-slim
+# Start with the base image
+FROM continuumio/miniconda3
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
@@ -7,28 +7,20 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Set the working directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    wget \
-    curl \
-    unzip \
-    git \
-    build-essential \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# Update conda and install necessary packages
+RUN conda update -n base -c defaults conda && \
+    conda install -c conda-forge obspy pandas pyarrow numpy matplotlib scipy -y && \
+    conda clean --all -y
 
-# Upgrade pip and install wheel
-RUN python -m pip install --upgrade pip wheel setuptools
+# Install additional packages via pip
+RUN pip install --no-binary=:all: wheel setuptools dask
 
-# Install required Python packages
-RUN pip install --no-cache-dir \
-    obspy \
-    pandas \
-    pyarrow \
-    dask
+# Install gcc and other build dependencies
+RUN apt-get update && apt-get install -y gcc g++ && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy the conversion script
 COPY mseed_parquet.py /app/mseed_parquet.py
 
 # Set the default command to run when starting the container
-CMD ["python", "/app/verify_data.py", "/app/mseed_parquet.py"]
+CMD ["python", "/app/mseed_parquet.py"]
