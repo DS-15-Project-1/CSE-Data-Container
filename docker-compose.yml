@@ -5,7 +5,7 @@ services:
     volumes:
       - /mnt:/mnt
       - /mnt/code/output:/mnt/code/output
-    command: python /app/mseed_parquet.py
+    command: python /app/mseed_parquet_ZZ.py
 
   # converter-2:
   #   build: .
@@ -13,7 +13,7 @@ services:
   #   volumes:
   #     - /mnt:/mnt
   #     - /mnt/code/output:/mnt/code/output
-  #   command: python /app/mseed_parquet.py
+  #   command: python /app/mseed_parquet_ZB.py
 
 volumes:
   input_data:
@@ -22,6 +22,7 @@ volumes:
       type: none
       o: bind
       device: /mnt
+
   output_data:
     driver: local
     driver_opts:
