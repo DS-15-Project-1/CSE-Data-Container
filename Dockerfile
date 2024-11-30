@@ -1,4 +1,3 @@
-# Start with the base image
 FROM continuumio/miniconda3
 
 # Set environment variables
