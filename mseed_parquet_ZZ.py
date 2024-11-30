@@ -64,7 +64,7 @@ def convert_file_to_parquet(input_file, output_file):
     except Exception as e:
         print(f"Error converting {input_file}: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
-
+        
 # Set the input and output directories
 input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ"
 output_dir = "/mnt/code/output/ZB"
@@ -84,8 +84,12 @@ for root, dirs, files in os.walk(input_dir):
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
         
         # Convert the file
-        convert_file_to_parquet(input_file, output_file)
-        
-        print(f"Processed {input_file}")
+        try:
+            convert_file_to_parquet(input_file, output_file)
+            print(f"Processed {input_file}")
+        except Exception as e:
+            print(f"Error processing {input_file}: {str(e)}")
+            print(f"Traceback: {traceback.format_exc()}")
 
 print("Conversion complete!")
+
