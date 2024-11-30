@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   converter:
     build: .
@@ -8,13 +6,14 @@ services:
       - /mnt:/mnt
       - /mnt/code/output:/mnt/code/output
     command: python /app/mseed_parquet.py
-  converter-2:
-    build: .
-    container_name: "miniseed-to-parquet-converter-2"
-    volumes:
-      - /mnt:/mnt
-      - /mnt/code/output:/mnt/code/output
-    command: python /app/mseed_parquet.py
+
+  # converter-2:
+  #   build: .
+  #   container_name: "miniseed-to-parquet-converter-2"
+  #   volumes:
+  #     - /mnt:/mnt
+  #     - /mnt/code/output:/mnt/code/output
+  #   command: python /app/mseed_parquet.py
 
 volumes:
   input_data:
