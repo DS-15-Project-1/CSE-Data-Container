@@ -22,4 +22,4 @@ RUN apt-get update && apt-get install -y gcc g++ && \
 COPY mseed_parquet.py /app/mseed_parquet.py
 
 # Set the default command to run when starting the container
-CMD ["python", "/app/mseed_parquet.py"]
+CMD ["python", "/app/mseed_parquet_zz.py"]
