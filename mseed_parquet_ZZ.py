@@ -40,39 +40,34 @@ def convert_file_to_parquet(input_file, output_file):
         start_time = datetime.fromtimestamp(start_time.timestamp)
         end_time = datetime.fromtimestamp(end_time.timestamp)
         
-   # Generate time series
-    time_step = timedelta(seconds=1 / sampling_rate)
-    time_series = pd.date_range(start=start_time, periods=len(st[0].data), freq=time_step)
-    
-    # Convert time_series to a list of timestamps
-    timestamps = time_series.to_list()
-
-    # Create DataFrame
-    df = pd.DataFrame({
-        'network': [network],
-        'station': [station],
-        'location': [location],
-        'channel': [channel],
-        'starttime': [start_time],
-        'endtime': [end_time],
-        'sampling_rate': [sampling_rate],
-        'data': [st[0].data],
-        'timestamps': [timestamps]
-    })
-    
-    # Convert DataFrame to PyArrow Table
-    table = pa.Table.from_pandas(df)
-    
-    # Write to Parquet
-    pq.write_table(table, output_file)
-    print(f"Successfully converted: {input_file} -> {output_file}")
+        # Generate time series
+        time_step = timedelta(seconds=1 / sampling_rate)
+        time_series = pd.date_range(start=start_time, periods=len(st[0].data), freq=time_step)
+        
+        # Create DataFrame
+        df = pd.DataFrame({
+            'network': [network],
+            'station': [station],
+            'location': [location],
+            'channel': [channel],
+            'starttime': [start_time],
+            'endtime': [end_time],
+            'sampling_rate': [sampling_rate],
+            'data': [st[0].data],
+            'timestamps': [time_series]
+        })
+        
+        # Write to Parquet
+        table = pa.Table.from_pandas(df)
+        pq.write_table(table, output_file)
+        print(f"Successfully converted: {input_file} -> {output_file}")
     except Exception as e:
         print(f"Error converting {input_file}: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
-        
+
 # Set the input and output directories
 input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ"
-output_dir = "/mnt/code/output/ZB"
+output_dir = "/mnt/code/output/ZZ"
 
 # Create the output directory if it doesn't exist
 os.makedirs(output_dir, exist_ok=True)
