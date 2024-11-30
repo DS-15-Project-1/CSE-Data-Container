@@ -44,6 +44,9 @@ def convert_file_to_parquet(input_file, output_file):
         time_step = timedelta(seconds=1 / sampling_rate)
         time_series = pd.date_range(start=start_time, periods=len(st[0].data), freq=time_step)
         
+        # Convert time_series to a list of timestamps
+        timestamps = time_series.to_list()
+
         # Create DataFrame
         df = pd.DataFrame({
             'network': [network],
@@ -54,16 +57,31 @@ def convert_file_to_parquet(input_file, output_file):
             'endtime': [end_time],
             'sampling_rate': [sampling_rate],
             'data': [st[0].data],
-            'timestamps': [time_series]
+            'timestamps': [timestamps]
         })
         
+        # Convert DataFrame to PyArrow Table
+        schema = pa.schema([
+            ('network', pa.string()),
+            ('station', pa.string()),
+            ('location', pa.string()),
+            ('channel', pa.string()),
+            ('starttime', pa.timestamp('ns')),
+            ('endtime', pa.timestamp('ns')),
+            ('sampling_rate', pa.float64()),
+            ('data', pa.list_(pa.float64())),
+            ('timestamps', pa.list_(pa.timestamp('ns')))
+        ])
+        
+        table = pa.Table.from_pandas(df, schema=schema)
+        
         # Write to Parquet
-        table = pa.Table.from_pandas(df)
         pq.write_table(table, output_file)
         print(f"Successfully converted: {input_file} -> {output_file}")
     except Exception as e:
         print(f"Error converting {input_file}: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
+
 
 # Set the input and output directories
 input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ"
