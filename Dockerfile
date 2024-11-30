@@ -24,4 +24,4 @@ COPY mseed_parquet_ZB.py /app/mseed_parquet_ZB.py
 
 
 # Set the default command to run when starting the container
-CMD ["python", "/app/mseed_parquet_zz.py"]
+CMD ["python", "/app/mseed_parquet_ZB.py"]
