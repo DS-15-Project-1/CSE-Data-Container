@@ -12,7 +12,7 @@ RUN conda update -n base -c defaults conda && \
     conda clean --all -y
 
 # Install additional packages via pip
-RUN pip install --no-binary=:all: wheel setuptools dask
+RUN pip install --no-binary=:all: wheel setuptools
 
 # Install gcc and other build dependencies
 RUN apt-get update && apt-get install -y gcc g++ && \
