@@ -8,6 +8,10 @@ services:
       - /mnt:/mnt
       - /mnt/code/output:/mnt/code/output
     command: python /notebooks/mseed_parquet_ZZ.py
+    deploy:
+      resources:
+        limits:
+          memory: 3G
 
 volumes:
   input_data:

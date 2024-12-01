@@ -6,7 +6,15 @@ import pyarrow.parquet as pq
 import traceback
 from datetime import datetime, timedelta
 
-def convert_file_to_parquet(input_file, output_file):
+def read_file_in_chunks(input_file, chunk_size=1000000):
+    with open(input_file, 'rb') as f:
+        while True:
+            chunk = f.read(chunk_size)
+            if not chunk:
+                break
+            yield chunk
+
+def convert_file_to_parquet(input_file, output_file, chunk_size=1000000):
     print(f"Attempting to convert: {input_file}")
     print(f"Processing file: {input_file}")
     print(f"Output will be: {output_file}")
@@ -23,9 +31,12 @@ def convert_file_to_parquet(input_file, output_file):
             print(f"File size: {os.path.getsize(input_file)} bytes")
             print(f"First few bytes: {f.read(20)}")
         
-        # Read the file
-        st = read(input_file)
-        print(f"Successfully read: {input_file}")
+        # Read the file in chunks
+        chunks = read_file_in_chunks(input_file, chunk_size)
+        
+        # Process the first chunk to get metadata
+        first_chunk = next(chunks)
+        st = read(first_chunk)
         
         # Extract metadata
         network = st[0].stats.network
@@ -109,4 +120,3 @@ for root, dirs, files in os.walk(input_dir):
             print(f"Traceback: {traceback.format_exc()}")
 
 print("Conversion complete!")
-
