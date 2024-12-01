@@ -11,9 +11,8 @@ RUN conda env create -f environment.yml
 # Activate the environment
 SHELL ["conda", "run", "-n", "myenv", "/bin/bash", "-c"]
 
-# Install packages via pip
-RUN pip install --no-binary=:all: wheel setuptools && \
-    pip install --no-binary=:all: pyarrow pandas numpy scipy matplotlib
+# Install additional packages via conda
+RUN conda install -c conda-forge pyarrow pandas numpy scipy matplotlib -y
 
 # Copy entrypoint script
 COPY entrypoint.sh /app/entrypoint.sh
