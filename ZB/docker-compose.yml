@@ -12,7 +12,7 @@ services:
       resources:
         limits:
           memory: 2G
-          cpus: 1
+          cpus: '1'
 
 volumes:
   input_data:
