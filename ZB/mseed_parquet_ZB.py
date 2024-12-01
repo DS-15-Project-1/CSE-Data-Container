@@ -6,44 +6,14 @@ import pyarrow.parquet as pq
 import traceback
 from datetime import datetime, timedelta
 
-def read_file_in_chunks(input_file, chunk_size=1000000):
-    with open(input_file, 'rb') as f:
-        while True:
-            chunk = f.read(chunk_size)
-            if not chunk:
-                break
-            yield chunk
-
-def convert_file_to_parquet(input_file, output_file, chunk_size=1000000):
+def process_miniseed_file(input_file):
     try:
-        # Debug logging
-        print(f"Input file: {input_file}")
-        print(f"Output file: {output_file}")
-        print(f"File exists: {os.path.exists(input_file)}")
-        print(f"Is file: {os.path.isfile(input_file)}")
+        # Read the miniseed file using ObsPy
+        st = read(input_file)
         
-        # Check file readability
-        if os.access(input_file, os.R_OK):
-            print(f"File is readable: {input_file}")
-        else:
-            print(f"File is not readable: {input_file}")
-            return
-        
-        # Check file contents
-        with open(input_file, 'rb') as f:
-            print(f"File size: {os.path.getsize(input_file)} bytes")
-            print(f"First few bytes: {f.read(20)}")
-        
-        # Read the file in chunks
-        chunks = read_file_in_chunks(input_file, chunk_size)
-        
-        # Process the first chunk to get metadata
-        first_chunk = next(chunks)
-        try:
-            st = read(first_chunk)
-        except Exception as e:
-            print(f"Error reading file {input_file}: {str(e)}")
-            return
+        # Get the data and timestamps
+        data = st[0].data
+        timestamps = st[0].times()
         
         # Extract metadata
         network = st[0].stats.network
@@ -55,16 +25,9 @@ def convert_file_to_parquet(input_file, output_file, chunk_size=1000000):
         sampling_rate = st[0].stats.sampling_rate
         
         # Convert UTCDateTime to datetime
-        start_time = datetime.fromtimestamp(start_time.timestamp)
-        end_time = datetime.fromtimestamp(end_time.timestamp)
+        start_time = datetime.fromtimestamp(start_time.timestamp())
+        end_time = datetime.fromtimestamp(end_time.timestamp())
         
-        # Generate time series
-        time_step = timedelta(seconds=1 / sampling_rate)
-        time_series = pd.date_range(start=start_time, periods=len(st[0].data), freq=time_step)
-        
-        # Convert time_series to a list of timestamps
-        timestamps = time_series.to_list()
-
         # Create DataFrame
         df = pd.DataFrame({
             'network': [network],
@@ -74,8 +37,8 @@ def convert_file_to_parquet(input_file, output_file, chunk_size=1000000):
             'starttime': [start_time],
             'endtime': [end_time],
             'sampling_rate': [sampling_rate],
-            'data': [st[0].data],
-            'timestamps': [timestamps]
+            'data': [data],
+            'timestamps': [timestamps.tolist()]
         })
         
         # Convert DataFrame to PyArrow Table
@@ -84,21 +47,23 @@ def convert_file_to_parquet(input_file, output_file, chunk_size=1000000):
             ('station', pa.string()),
             ('location', pa.string()),
             ('channel', pa.string()),
-            ('starttime', pa.timestamp('ns')),
-            ('endtime', pa.timestamp('ns')),
+            ('starttime', pa.datetime64('ns')),
+            ('endtime', pa.datetime64('ns')),
             ('sampling_rate', pa.float64()),
             ('data', pa.list_(pa.float64())),
-            ('timestamps', pa.list_(pa.timestamp('ns')))
+            ('timestamps', pa.list_(pa.datetime64('ns')))
         ])
         
         table = pa.Table.from_pandas(df, schema=schema)
         
         # Write to Parquet
+        output_file = os.path.splitext(input_file)[0] + '.parquet'
         pq.write_table(table, output_file)
         print(f"Successfully converted: {input_file} -> {output_file}")
     except Exception as e:
-        print(f"Error converting {input_file}: {str(e)}")
+        print(f"Error processing file {input_file}: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
+        return None
 
 def process_directory(input_dir, output_dir):
     # Create the output directory if it doesn't exist
@@ -116,16 +81,15 @@ def process_directory(input_dir, output_dir):
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
             
             # Convert the file
-            try:
-                convert_file_to_parquet(input_file, output_file)
+            result = process_miniseed_file(input_file)
+            if result is not None:
                 print(f"Processed {input_file}")
-            except Exception as e:
-                print(f"Error processing {input_file}: {str(e)}")
-                print(f"Traceback: {traceback.format_exc()}")
+            else:
+                print(f"Failed to process {input_file}")
 
 # Set the input and output directories
-input_dir = r"/mnt/data/SWP_Seismic_Database_Current/2019/ZZ"
-output_dir = r"/mnt/code/output/ZZ"
+input_dir = r"/mnt/data/SWP_Seismic_Database_Current/2019/ZB"
+output_dir = r"/mnt/code/output/ZB"
 
 # Process the directory
 process_directory(input_dir, output_dir)
