@@ -6,18 +6,11 @@ import pyarrow.parquet as pq
 import traceback
 from datetime import datetime, timedelta
 
-def read_file_in_chunks(input_file, chunk_size=1000000):
-    with open(input_file, 'rb') as f:
-        while True:
-            chunk = f.read(chunk_size)
-            if not chunk:
-                break
-            yield chunk
-
 def process_miniseed_file(input_file):
     try:
         # Debug logging
         print(f"Input file: {input_file}")
+        print(f"Absolute path: {os.path.abspath(input_file)}")
         print(f"File exists: {os.path.exists(input_file)}")
         print(f"Is file: {os.path.isfile(input_file)}")
         
@@ -33,16 +26,8 @@ def process_miniseed_file(input_file):
             print(f"File size: {os.path.getsize(input_file)} bytes")
             print(f"First few bytes: {f.read(20)}")
         
-        # Read the file in chunks
-        chunks = read_file_in_chunks(input_file)
-        
-        # Process the first chunk to get metadata
-        first_chunk = next(chunks)
-        try:
-            st = read(first_chunk)
-        except Exception as e:
-            print(f"Error reading file {input_file}: {str(e)}")
-            return None
+        # Read the file
+        st = read(input_file)
         
         # Extract metadata
         network = st[0].stats.network
@@ -110,7 +95,7 @@ def process_directory(input_dir, output_dir):
         print(f"Searching for files in: {root}")
         for file in files:
             input_file = os.path.join(root, file)
-            rel_path = os.path.relpath(input_file, input_file)
+            rel_path = os.path.relpath(input_file, input_dir)
             output_file = os.path.join(output_dir, rel_path).replace(os.path.splitext(file)[1], ".parquet")
             
             # Create the output directory if it doesn't exist
