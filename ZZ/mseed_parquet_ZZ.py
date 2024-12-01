@@ -35,7 +35,7 @@ def convert_channel_to_parquet(input_dir, output_dir):
         timestamps = []
         
         # Process each file in the input directory
-        channel_dir = os.path.join(input_dir, channel)
+        channel_dir = os.path.join(input_dir, f"{channel}.D")
         if os.path.isdir(channel_dir):
             print(f"Processing channel directory: {channel_dir}")
             for file in os.listdir(channel_dir):
