@@ -22,4 +22,5 @@ RUN apt-get update && apt-get install -y gcc g++ && \
 COPY mseed_parquet_ZB.py /notebooks/mseed_parquet_ZB.py
 
 # Set the default command to run when starting the container
-CMD ["python", "/app/mseed_parquet_ZB.py"]
+CMD ["--memory", "3g", "python", "/notebooks/mseed_parquet_ZB.py"]
+
