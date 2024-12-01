@@ -4,7 +4,7 @@ FROM continuumio/miniconda3
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Set the working directory
-WORKDIR /app
+WORKDIR /notebooks
 
 # Update conda and install necessary packages
 RUN conda update -n base -c defaults conda && \
