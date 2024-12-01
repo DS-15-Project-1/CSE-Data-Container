@@ -56,25 +56,20 @@ def convert_file_to_parquet(input_file, output_file):
             'timestamps': [timestamps.tolist()]
         })
         
-        # Define schema
-        schema = pa.schema([
-            ('network', pa.string()),
-            ('station', pa.string()),
-            ('location', pa.string()),
-            ('channel', pa.string()),
-            ('starttime', pa.timestamp('ns')),
-            ('endtime', pa.timestamp('ns')),
-            ('sampling_rate', pa.float64()),
-            ('data', pa.list_(pa.float64())),
-            ('timestamps', pa.list_(pa.float64()))
-        ])
-        
         # Convert DataFrame to PyArrow Table
-        table = pa.Table.from_pandas(df, schema=schema)
+        table = pa.Table.from_pandas(df)
         
         # Write to Parquet
-        pq.write_table(table, output_file)
-        print(f"Successfully converted: {input_file} -> {output_file}")
+        if os.path.exists(output_file):
+            # If the file exists, append to it
+            existing_table = pq.read_table(output_file)
+            combined_table = pa.concat_tables([existing_table, table])
+            pq.write_table(combined_table, output_file)
+        else:
+            # If the file doesn't exist, create it
+            pq.write_table(table, output_file)
+        
+        print(f"Successfully converted and appended: {input_file} -> {output_file}")
     except Exception as e:
         print(f"Error converting {input_file}: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
@@ -89,13 +84,10 @@ os.makedirs(output_dir, exist_ok=True)
 # Iterate over the directory structure
 for root, dirs, files in os.walk(input_dir):
     print(f"Searching for files in: {root}")
+    output_file = os.path.join(output_dir, f"{os.path.basename(root)}.parquet")
+    
     for file in files:
         input_file = os.path.join(root, file)
-        rel_path = os.path.relpath(input_file, input_dir)
-        output_file = os.path.join(output_dir, rel_path).replace(os.path.splitext(file)[1], ".parquet")
-        
-        # Create the output directory if it doesn't exist
-        os.makedirs(os.path.dirname(output_file), exist_ok=True)
         
         # Convert the file
         convert_file_to_parquet(input_file, output_file)
