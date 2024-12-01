@@ -5,6 +5,11 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import traceback
 from datetime import datetime
+import psutil
+
+def get_memory_usage():
+    process = psutil.Process()
+    return process.memory_info().rss / 1024 / 1024  # in MB
 
 def convert_channel_to_parquet(input_dir, output_dir):
     print(f"Processing channel data in {input_dir}")
@@ -23,17 +28,6 @@ def convert_channel_to_parquet(input_dir, output_dir):
         # Create the output file name
         output_file = os.path.join(output_dir, f"{channel}.parquet")
         
-        # Initialize lists to store data
-        networks = []
-        stations = []
-        locations = []
-        channels = []
-        starttimes = []
-        endtimes = []
-        sampling_rates = []
-        data = []
-        timestamps = []
-        
         # Process each file in the input directory
         channel_dir = os.path.join(input_dir, f"{channel}.D")
         if os.path.isdir(channel_dir):
@@ -50,61 +44,55 @@ def convert_channel_to_parquet(input_dir, output_dir):
                     st = read(input_file)
                     
                     # Extract metadata
-                    networks.append(st[0].stats.network)
-                    stations.append(st[0].stats.station)
-                    locations.append(st[0].stats.location)
-                    channels.append(st[0].stats.channel)
-                    starttimes.append(datetime.fromtimestamp(st[0].stats.starttime.timestamp))
-                    endtimes.append(datetime.fromtimestamp(st[0].stats.endtime.timestamp))
-                    sampling_rates.append(st[0].stats.sampling_rate)
-                    data.append(st[0].data)
-                    timestamps.append(st[0].times())
+                    network = st[0].stats.network
+                    station = st[0].stats.station
+                    location = st[0].stats.location
+                    channel = st[0].stats.channel
+                    starttime = datetime.fromtimestamp(st[0].stats.starttime.timestamp)
+                    endtime = datetime.fromtimestamp(st[0].stats.endtime.timestamp)
+                    sampling_rate = st[0].stats.sampling_rate
+                    data = st[0].data
+                    timestamps = st[0].times()
+                    
+                    # Create DataFrame for this single file
+                    df = pd.DataFrame({
+                        'network': [network],
+                        'station': [station],
+                        'location': [location],
+                        'channel': [channel],
+                        'starttime': [starttime],
+                        'endtime': [endtime],
+                        'sampling_rate': [sampling_rate],
+                        'data': [data],
+                        'timestamps': [timestamps]
+                    })
+                    
+                    # Convert DataFrame to PyArrow Table
+                    table = pa.Table.from_pandas(df)
+                    
+                    # Write the table to Parquet file
+                    if os.path.exists(output_file):
+                        # Append to existing Parquet file
+                        existing_table = pq.read_table(output_file)
+                        combined_table = pa.concat_tables([existing_table, table])
+                        pq.write_table(combined_table, output_file)
+                    else:
+                        # Create new Parquet file
+                        pq.write_table(table, output_file)
                     
                     processed_count += 1
                     
-                    # Process in chunks of 100 files
-                    if processed_count % 10 == 0:
-                        process_chunk(networks, stations, locations, channels, starttimes, endtimes, sampling_rates, data, timestamps, output_file)
-                        networks, stations, locations, channels, starttimes, endtimes, sampling_rates, data, timestamps = [], [], [], [], [], [], [], [], []
+                    # Print memory usage every 100 files
+                    if processed_count % 100 == 0:
+                        print(f"Memory usage: {get_memory_usage():.2f} MB")
                         
                 except Exception as e:
                     print(f"Error processing {input_file}: {str(e)}")
                     traceback.print_exc()
             
-            # Process any remaining files
-            if networks:
-                process_chunk(networks, stations, locations, channels, starttimes, endtimes, sampling_rates, data, timestamps, output_file)
-            
             print(f"Successfully converted {channel} data: {output_file}")
         else:
             print(f"Channel directory not found: {channel_dir}")
-
-def process_chunk(networks, stations, locations, channels, starttimes, endtimes, sampling_rates, data, timestamps, output_file):
-    # Create DataFrame
-    df = pd.DataFrame({
-        'network': networks,
-        'station': stations,
-        'location': locations,
-        'channel': channels,
-        'starttime': starttimes,
-        'endtime': endtimes,
-        'sampling_rate': sampling_rates,
-        'data': data,
-        'timestamps': timestamps
-    })
-    
-    # Convert DataFrame to PyArrow Table
-    table = pa.Table.from_pandas(df)
-    
-    # Write the table to Parquet file
-    if os.path.exists(output_file):
-        # Append to existing Parquet file
-        existing_table = pq.read_table(output_file)
-        combined_table = pa.concat_tables([existing_table, table])
-        pq.write_table(combined_table, output_file)
-    else:
-        # Create new Parquet file
-        pq.write_table(table, output_file)
 
 # Usage
 input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ"
