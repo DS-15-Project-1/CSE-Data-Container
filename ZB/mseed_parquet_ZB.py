@@ -43,31 +43,39 @@ def convert_file_to_parquet(input_file, output_file):
         # Get timestamps
         timestamps = st[0].times()
         
-        # Create DataFrame
-        df = pd.DataFrame({
-            'network': [network],
-            'station': [station],
-            'location': [location],
-            'channel': [channel],
-            'starttime': [start_time],
-            'endtime': [end_time],
-            'sampling_rate': [sampling_rate],
-            'data': [st[0].data],
-            'timestamps': [timestamps.tolist()]
-        })
+        # Define chunk size
+        chunk_size = 1000000  # Adjust this value based on your needs
         
-        # Convert DataFrame to PyArrow Table
-        table = pa.Table.from_pandas(df)
-        
-        # Write to Parquet
-        if os.path.exists(output_file):
-            # If the file exists, append to it
-            existing_table = pq.read_table(output_file)
-            combined_table = pa.concat_tables([existing_table, table])
-            pq.write_table(combined_table, output_file)
-        else:
-            # If the file doesn't exist, create it
-            pq.write_table(table, output_file)
+        # Process data in chunks
+        for i in range(0, len(st[0].data), chunk_size):
+            chunk = st[0].data[i:i+chunk_size]
+            chunk_timestamps = timestamps[i:i+chunk_size]
+            
+            # Create DataFrame
+            df = pd.DataFrame({
+                'network': [network],
+                'station': [station],
+                'location': [location],
+                'channel': [channel],
+                'starttime': [start_time],
+                'endtime': [end_time],
+                'sampling_rate': [sampling_rate],
+                'data': [chunk],
+                'timestamps': [chunk_timestamps.tolist()]
+            })
+            
+            # Convert DataFrame to PyArrow Table
+            table = pa.Table.from_pandas(df)
+            
+            # Write to Parquet
+            if os.path.exists(output_file):
+                # If the file exists, append to it
+                existing_table = pq.read_table(output_file)
+                combined_table = pa.concat_tables([existing_table, table])
+                pq.write_table(combined_table, output_file)
+            else:
+                # If the file doesn't exist, create it
+                pq.write_table(table, output_file)
         
         print(f"Successfully converted and appended: {input_file} -> {output_file}")
     except Exception as e:
