@@ -5,8 +5,8 @@ channels:
 dependencies:
   - python=3.8
   - obspy
-  - pandas
   - pyarrow
+  - pandas
   - numpy
-  - matplotlib
   - scipy
+  - matplotlib
