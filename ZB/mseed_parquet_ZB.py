@@ -4,22 +4,19 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 import traceback
-from datetime import datetime, timedelta
+from datetime import datetime
 
-def process_miniseed_file(input_file):
+def convert_file_to_parquet(input_file, output_file):
+    print(f"Attempting to convert: {input_file}")
+    print(f"Processing file: {input_file}")
+    print(f"Output will be: {output_file}")
+
     try:
         # Debug logging
         print(f"Input file: {input_file}")
-        print(f"Absolute path: {os.path.abspath(input_file)}")
+        print(f"Output file: {output_file}")
         print(f"File exists: {os.path.exists(input_file)}")
         print(f"Is file: {os.path.isfile(input_file)}")
-        
-        # Check file readability
-        if os.access(input_file, os.R_OK):
-            print(f"File is readable: {input_file}")
-        else:
-            print(f"File is not readable: {input_file}")
-            return None
         
         # Check file contents
         with open(input_file, 'rb') as f:
@@ -28,6 +25,7 @@ def process_miniseed_file(input_file):
         
         # Read the file
         st = read(input_file)
+        print(f"Successfully read: {input_file}")
         
         # Extract metadata
         network = st[0].stats.network
@@ -42,13 +40,9 @@ def process_miniseed_file(input_file):
         start_time = datetime.fromtimestamp(start_time.timestamp)
         end_time = datetime.fromtimestamp(end_time.timestamp)
         
-        # Generate time series
-        time_step = timedelta(seconds=1 / sampling_rate)
-        time_series = pd.date_range(start=start_time, periods=len(st[0].data), freq=time_step)
+        # Get timestamps
+        timestamps = st[0].times()
         
-        # Convert time_series to a list of timestamps
-        timestamps = time_series.to_list()
-
         # Create DataFrame
         df = pd.DataFrame({
             'network': [network],
@@ -59,10 +53,10 @@ def process_miniseed_file(input_file):
             'endtime': [end_time],
             'sampling_rate': [sampling_rate],
             'data': [st[0].data],
-            'timestamps': [timestamps]
+            'timestamps': [timestamps.tolist()]
         })
         
-        # Convert DataFrame to PyArrow Table
+        # Define schema
         schema = pa.schema([
             ('network', pa.string()),
             ('station', pa.string()),
@@ -72,47 +66,40 @@ def process_miniseed_file(input_file):
             ('endtime', pa.timestamp('ns')),
             ('sampling_rate', pa.float64()),
             ('data', pa.list_(pa.float64())),
-            ('timestamps', pa.list_(pa.timestamp('ns')))
+            ('timestamps', pa.list_(pa.float64()))
         ])
         
+        # Convert DataFrame to PyArrow Table
         table = pa.Table.from_pandas(df, schema=schema)
         
         # Write to Parquet
-        output_file = os.path.splitext(input_file)[0] + '.parquet'
         pq.write_table(table, output_file)
         print(f"Successfully converted: {input_file} -> {output_file}")
     except Exception as e:
-        print(f"Error processing file {input_file}: {str(e)}")
+        print(f"Error converting {input_file}: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
-        return None
-
-def process_directory(input_dir, output_dir):
-    # Create the output directory if it doesn't exist
-    os.makedirs(output_dir, exist_ok=True)
-
-    # Iterate over the directory structure
-    for root, dirs, files in os.walk(input_dir):
-        print(f"Searching for files in: {root}")
-        for file in files:
-            input_file = os.path.join(root, file)
-            rel_path = os.path.relpath(input_file, input_dir)
-            output_file = os.path.join(output_dir, rel_path).replace(os.path.splitext(file)[1], ".parquet")
-            
-            # Create the output directory if it doesn't exist
-            os.makedirs(os.path.dirname(output_file), exist_ok=True)
-            
-            # Convert the file
-            result = process_miniseed_file(input_file)
-            if result is not None:
-                print(f"Processed {input_file}")
-            else:
-                print(f"Failed to process {input_file}")
 
 # Set the input and output directories
-input_dir = r"/mnt/data/SWP_Seismic_Database_Current/2019/ZB"
-output_dir = r"/mnt/code/output/ZB"
+input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZB"
+output_dir = "/mnt/code/output/ZB"
 
-# Process the directory
-process_directory(input_dir, output_dir)
+# Create the output directory if it doesn't exist
+os.makedirs(output_dir, exist_ok=True)
+
+# Iterate over the directory structure
+for root, dirs, files in os.walk(input_dir):
+    print(f"Searching for files in: {root}")
+    for file in files:
+        input_file = os.path.join(root, file)
+        rel_path = os.path.relpath(input_file, input_dir)
+        output_file = os.path.join(output_dir, rel_path).replace(os.path.splitext(file)[1], ".parquet")
+        
+        # Create the output directory if it doesn't exist
+        os.makedirs(os.path.dirname(output_file), exist_ok=True)
+        
+        # Convert the file
+        convert_file_to_parquet(input_file, output_file)
+        
+        print(f"Processed {input_file}")
 
 print("Conversion complete!")
