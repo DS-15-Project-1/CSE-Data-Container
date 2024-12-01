@@ -11,7 +11,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 3G
+          memory: 4G
 
 volumes:
   input_data:
