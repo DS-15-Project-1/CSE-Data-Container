@@ -17,7 +17,8 @@ RUN pip install --no-cache-dir \
     scipy \
     matplotlib \
     wheel \
-    setuptools
+    setuptools \ 
+    psutil
 
 # Copy entrypoint script
 COPY entrypoint.sh /app/entrypoint.sh
