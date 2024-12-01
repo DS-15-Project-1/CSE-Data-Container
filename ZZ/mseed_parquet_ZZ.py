@@ -1,3 +1,10 @@
+import os
+from obspy import read
+import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
+import traceback
+from datetime import datetime
 def convert_channel_to_parquet(input_dir, output_dir):
     print(f"Processing channel data in {input_dir}")
     
