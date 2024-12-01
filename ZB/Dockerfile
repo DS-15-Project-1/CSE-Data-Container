@@ -19,7 +19,7 @@ COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
 # Copy the conversion script
-COPY mseed_parquet_ZZ.py /app/mseed_parquet_ZZ.py
+COPY mseed_parquet_ZB.py /app/mseed_parquet_ZB.py
 
 # Set the entrypoint
 ENTRYPOINT ["/app/entrypoint.sh"]
