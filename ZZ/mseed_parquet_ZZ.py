@@ -43,7 +43,7 @@ def convert_miniseed_to_parquet(miniseed_file, output_dir):
         
         # Create output filename
         base_name = os.path.basename(miniseed_file)
-        output_file = os.path.join(output_dir, f"{os.path.splitext(base_name)[0]}.parquet")
+        output_file = os.path.join(output_dir, f"{base_name}.parquet")
         
         # Write the table to Parquet file
         pq.write_table(table, output_file)
@@ -61,25 +61,31 @@ output_dir = "/mnt/code/output"
 # Ensure the output directory exists
 os.makedirs(output_dir, exist_ok=True)
 
-# Process each miniseed file in the input directory and its subdirectories
+# Process each file in the input directory and its subdirectories
 total_files = 0
 converted_files = 0
 for root, dirs, files in os.walk(input_dir):
     print(f"Processing directory: {root}")
     for file in files:
-        if file.endswith('.mseed'):
-            miniseed_file = os.path.join(root, file)
-            
-            # Create the same directory structure in the output
-            relative_path = os.path.relpath(root, input_dir)
-            output_subdir = os.path.join(output_dir, relative_path)
-            os.makedirs(output_subdir, exist_ok=True)
-            
-            total_files += 1
-            if convert_miniseed_to_parquet(miniseed_file, output_subdir):
-                converted_files += 1
+        miniseed_file = os.path.join(root, file)
+        
+        # Create the same directory structure in the output
+        relative_path = os.path.relpath(root, input_dir)
+        output_subdir = os.path.join(output_dir, relative_path)
+        os.makedirs(output_subdir, exist_ok=True)
+        
+        total_files += 1
+        if convert_miniseed_to_parquet(miniseed_file, output_subdir):
+            converted_files += 1
 
 print(f"Conversion complete!")
 print(f"Total files processed: {total_files}")
 print(f"Files successfully converted: {converted_files}")
 print(f"Output directory: {output_dir}")
+
+# Print directory contents
+print("Directory contents:")
+for root, dirs, files in os.walk(input_dir):
+    print(f"Directory: {root}")
+    for file in files:
+        print(f"  {file}")
