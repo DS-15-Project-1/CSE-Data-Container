@@ -38,9 +38,12 @@ def convert_channel_to_parquet(input_dir, output_dir):
         channel_dir = os.path.join(input_dir, f"{channel}.D")
         if os.path.isdir(channel_dir):
             print(f"Processing channel directory: {channel_dir}")
+            file_count = len(os.listdir(channel_dir))
+            processed_count = 0
+            
             for file in os.listdir(channel_dir):
                 input_file = os.path.join(channel_dir, file)
-                print(f"  Processing file: {input_file}")
+                print(f"  Processing file {processed_count + 1}/{file_count}: {input_file}")
                 
                 try:
                     # Read the file
@@ -57,35 +60,51 @@ def convert_channel_to_parquet(input_dir, output_dir):
                     data.append(st[0].data)
                     timestamps.append(st[0].times())
                     
+                    processed_count += 1
+                    
+                    # Process in chunks of 100 files
+                    if processed_count % 10 == 0:
+                        process_chunk(networks, stations, locations, channels, starttimes, endtimes, sampling_rates, data, timestamps, output_file)
+                        networks, stations, locations, channels, starttimes, endtimes, sampling_rates, data, timestamps = [], [], [], [], [], [], [], [], []
+                        
                 except Exception as e:
                     print(f"Error processing {input_file}: {str(e)}")
                     traceback.print_exc()
-        else:
-            print(f"Channel directory not found: {channel_dir}")
-        
-        if networks:
-            # Create DataFrame
-            df = pd.DataFrame({
-                'network': networks,
-                'station': stations,
-                'location': locations,
-                'channel': channels,
-                'starttime': starttimes,
-                'endtime': endtimes,
-                'sampling_rate': sampling_rates,
-                'data': data,
-                'timestamps': timestamps
-            })
             
-            # Convert DataFrame to PyArrow Table
-            table = pa.Table.from_pandas(df)
-            
-            # Write the table to Parquet file
-            pq.write_table(table, output_file)
+            # Process any remaining files
+            if networks:
+                process_chunk(networks, stations, locations, channels, starttimes, endtimes, sampling_rates, data, timestamps, output_file)
             
             print(f"Successfully converted {channel} data: {output_file}")
         else:
-            print(f"No data found for channel {channel} in {input_dir}")
+            print(f"Channel directory not found: {channel_dir}")
+
+def process_chunk(networks, stations, locations, channels, starttimes, endtimes, sampling_rates, data, timestamps, output_file):
+    # Create DataFrame
+    df = pd.DataFrame({
+        'network': networks,
+        'station': stations,
+        'location': locations,
+        'channel': channels,
+        'starttime': starttimes,
+        'endtime': endtimes,
+        'sampling_rate': sampling_rates,
+        'data': data,
+        'timestamps': timestamps
+    })
+    
+    # Convert DataFrame to PyArrow Table
+    table = pa.Table.from_pandas(df)
+    
+    # Write the table to Parquet file
+    if os.path.exists(output_file):
+        # Append to existing Parquet file
+        existing_table = pq.read_table(output_file)
+        combined_table = pa.concat_tables([existing_table, table])
+        pq.write_table(combined_table, output_file)
+    else:
+        # Create new Parquet file
+        pq.write_table(table, output_file)
 
 # Usage
 input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ"
