@@ -4,7 +4,7 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-def convert_miniseed_to_parquet(miniseed_file):
+def convert_miniseed_to_parquet(miniseed_file, output_dir):
     try:
         # Read the miniseed file
         st = read(miniseed_file)
@@ -35,8 +35,8 @@ def convert_miniseed_to_parquet(miniseed_file):
         table = pa.Table.from_pandas(df)
         
         # Create output filename
-        base_name = os.path.splitext(miniseed_file)[0]
-        output_file = f"{base_name}.parquet"
+        base_name = os.path.basename(miniseed_file)
+        output_file = os.path.join(output_dir, f"{os.path.splitext(base_name)[0]}.parquet")
         
         # Write the table to Parquet file
         pq.write_table(table, output_file)
@@ -45,12 +45,18 @@ def convert_miniseed_to_parquet(miniseed_file):
     except Exception as e:
         print(f"Error processing {miniseed_file}: {str(e)}")
 
-# Get the current directory
-current_dir = os.getcwd()
+# Define the input and output directories
+input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ"
+output_dir = "/mnt/code/output/2019"
 
-# Process each miniseed file in the current directory
-for file in os.listdir(current_dir):
-    if file.endswith('.mseed'):
-        convert_miniseed_to_parquet(file)
+# Ensure the output directory exists
+os.makedirs(output_dir, exist_ok=True)
+
+# Process each miniseed file in the input directory
+for root, dirs, files in os.walk(input_dir):
+    for file in files:
+        if file.endswith('.mseed'):
+            miniseed_file = os.path.join(root, file)
+            convert_miniseed_to_parquet(miniseed_file, output_dir)
 
 print("Conversion complete!")
