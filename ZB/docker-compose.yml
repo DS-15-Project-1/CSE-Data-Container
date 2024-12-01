@@ -3,28 +3,12 @@ version: '3'
 services:
   converter:
     build: .
-    container_name: "miniseed-to-parquet-converter-ZB"
+    container_name: "miniseed-to-parquet-converter-ZBS"
     volumes:
       - /mnt:/mnt
       - /mnt/code/output:/mnt/code/output
-    command: python /notebooks/mseed_parquet_ZB.py
+    command: python /app/mseed_parquet_ZB.py
     deploy:
       resources:
         limits:
-          memory: 2G
-          cpus: '1'
-
-volumes:
-  input_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /mnt
-
-  output_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /mnt/code/output
+          memory: 3G
