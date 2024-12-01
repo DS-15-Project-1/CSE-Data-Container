@@ -1,3 +1,5 @@
+version: "3"
+
 services:
   converter:
     build: .
@@ -11,6 +13,7 @@ services:
         limits:
           memory: 3G
 
+
 volumes:
   input_data:
     driver: local
@@ -19,7 +22,7 @@ volumes:
       o: bind
       device: /mnt
 
-output_data:
+  output_data:
     driver: local
     driver_opts:
       type: none
