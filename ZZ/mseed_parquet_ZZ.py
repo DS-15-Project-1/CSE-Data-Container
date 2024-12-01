@@ -6,14 +6,43 @@ import pyarrow.parquet as pq
 import traceback
 from datetime import datetime, timedelta
 
+def read_file_in_chunks(input_file, chunk_size=1000000):
+    with open(input_file, 'rb') as f:
+        while True:
+            chunk = f.read(chunk_size)
+            if not chunk:
+                break
+            yield chunk
+
 def process_miniseed_file(input_file):
     try:
-        # Read the miniseed file using ObsPy
-        st = read(input_file)
+        # Debug logging
+        print(f"Input file: {input_file}")
+        print(f"File exists: {os.path.exists(input_file)}")
+        print(f"Is file: {os.path.isfile(input_file)}")
         
-        # Get the data and timestamps
-        data = st[0].data
-        timestamps = st[0].times()
+        # Check file readability
+        if os.access(input_file, os.R_OK):
+            print(f"File is readable: {input_file}")
+        else:
+            print(f"File is not readable: {input_file}")
+            return None
+        
+        # Check file contents
+        with open(input_file, 'rb') as f:
+            print(f"File size: {os.path.getsize(input_file)} bytes")
+            print(f"First few bytes: {f.read(20)}")
+        
+        # Read the file in chunks
+        chunks = read_file_in_chunks(input_file)
+        
+        # Process the first chunk to get metadata
+        first_chunk = next(chunks)
+        try:
+            st = read(first_chunk)
+        except Exception as e:
+            print(f"Error reading file {input_file}: {str(e)}")
+            return None
         
         # Extract metadata
         network = st[0].stats.network
@@ -25,9 +54,16 @@ def process_miniseed_file(input_file):
         sampling_rate = st[0].stats.sampling_rate
         
         # Convert UTCDateTime to datetime
-        start_time = datetime.fromtimestamp(start_time.timestamp())
-        end_time = datetime.fromtimestamp(end_time.timestamp())
+        start_time = datetime.fromtimestamp(start_time.timestamp)
+        end_time = datetime.fromtimestamp(end_time.timestamp)
         
+        # Generate time series
+        time_step = timedelta(seconds=1 / sampling_rate)
+        time_series = pd.date_range(start=start_time, periods=len(st[0].data), freq=time_step)
+        
+        # Convert time_series to a list of timestamps
+        timestamps = time_series.to_list()
+
         # Create DataFrame
         df = pd.DataFrame({
             'network': [network],
@@ -37,8 +73,8 @@ def process_miniseed_file(input_file):
             'starttime': [start_time],
             'endtime': [end_time],
             'sampling_rate': [sampling_rate],
-            'data': [data],
-            'timestamps': [timestamps.tolist()]
+            'data': [st[0].data],
+            'timestamps': [timestamps]
         })
         
         # Convert DataFrame to PyArrow Table
@@ -47,11 +83,11 @@ def process_miniseed_file(input_file):
             ('station', pa.string()),
             ('location', pa.string()),
             ('channel', pa.string()),
-            ('starttime', pa.datetime64('ns')),
-            ('endtime', pa.datetime64('ns')),
+            ('starttime', pa.timestamp('ns')),
+            ('endtime', pa.timestamp('ns')),
             ('sampling_rate', pa.float64()),
             ('data', pa.list_(pa.float64())),
-            ('timestamps', pa.list_(pa.datetime64('ns')))
+            ('timestamps', pa.list_(pa.timestamp('ns')))
         ])
         
         table = pa.Table.from_pandas(df, schema=schema)
@@ -74,7 +110,7 @@ def process_directory(input_dir, output_dir):
         print(f"Searching for files in: {root}")
         for file in files:
             input_file = os.path.join(root, file)
-            rel_path = os.path.relpath(input_file, input_dir)
+            rel_path = os.path.relpath(input_file, input_file)
             output_file = os.path.join(output_dir, rel_path).replace(os.path.splitext(file)[1], ".parquet")
             
             # Create the output directory if it doesn't exist
