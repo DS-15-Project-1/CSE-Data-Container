@@ -5,11 +5,17 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import traceback
 from datetime import datetime
+
 def convert_channel_to_parquet(input_dir, output_dir):
     print(f"Processing channel data in {input_dir}")
     
     # Create the output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
+
+    # Print directory contents
+    print(f"Contents of {input_dir}:")
+    for item in os.listdir(input_dir):
+        print(f"  {item}")
 
     # Iterate over all channels (HHZ, HHE, HHN)
     channels = ['HHZ', 'HHE', 'HHN']
@@ -31,11 +37,12 @@ def convert_channel_to_parquet(input_dir, output_dir):
         # Process each file in the input directory
         channel_dir = os.path.join(input_dir, channel)
         if os.path.isdir(channel_dir):
+            print(f"Processing channel directory: {channel_dir}")
             for file in os.listdir(channel_dir):
                 input_file = os.path.join(channel_dir, file)
+                print(f"  Processing file: {input_file}")
                 
                 try:
-                    print(f"Processing file: {input_file}")
                     # Read the file
                     st = read(input_file)
                     
@@ -53,6 +60,8 @@ def convert_channel_to_parquet(input_dir, output_dir):
                 except Exception as e:
                     print(f"Error processing {input_file}: {str(e)}")
                     traceback.print_exc()
+        else:
+            print(f"Channel directory not found: {channel_dir}")
         
         if networks:
             # Create DataFrame
