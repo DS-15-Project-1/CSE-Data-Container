@@ -15,6 +15,7 @@ def read_file_in_chunks(input_file, chunk_size=1000000):
             yield chunk
 
 def convert_file_to_parquet(input_file, output_file, chunk_size=1000000):
+    
     print(f"Attempting to convert: {input_file}")
     print(f"Processing file: {input_file}")
     print(f"Output will be: {output_file}")
@@ -103,7 +104,6 @@ def convert_file_to_parquet(input_file, output_file, chunk_size=1000000):
     except Exception as e:
         print(f"Error converting {input_file}: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
-
 
 # Set the input and output directories
 input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ"
