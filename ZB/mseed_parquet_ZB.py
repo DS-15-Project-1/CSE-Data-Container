@@ -124,8 +124,8 @@ def process_directory(input_dir, output_dir):
                 print(f"Traceback: {traceback.format_exc()}")
 
 # Set the input and output directories
-input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZB"
-output_dir = "/mnt/code/output/ZB"
+input_dir = r"/mnt/data/SWP_Seismic_Database_Current/2019/ZZ"
+output_dir = r"/mnt/code/output/ZZ"
 
 # Process the directory
 process_directory(input_dir, output_dir)

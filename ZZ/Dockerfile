@@ -23,4 +23,3 @@ COPY mseed_parquet_ZZ.py /notebooks/mseed_parquet_ZZ.py
 
 # Set the default command to run when starting the container
 CMD ["--memory", "3g", "python", "/notebooks/mseed_parquet_ZZ.py"]
-
