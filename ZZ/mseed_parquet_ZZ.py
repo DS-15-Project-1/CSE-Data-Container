@@ -55,7 +55,7 @@ def convert_miniseed_to_parquet(miniseed_file, output_dir):
         return False
 
 # Define the input and output directories
-input_dir = "/mnt/data/SWP_Database_Current/2019/ZZ"
+input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ"
 output_dir = "/mnt/code/output"
 
 # Ensure the output directory exists
@@ -67,16 +67,17 @@ converted_files = 0
 for root, dirs, files in os.walk(input_dir):
     print(f"Processing directory: {root}")
     for file in files:
-        miniseed_file = os.path.join(root, file)
-        
-        # Create the same directory structure in the output
-        relative_path = os.path.relpath(root, input_dir)
-        output_subdir = os.path.join(output_dir, relative_path)
-        os.makedirs(output_subdir, exist_ok=True)
-        
-        total_files += 1
-        if convert_miniseed_to_parquet(miniseed_file, output_subdir):
-            converted_files += 1
+        if file.startswith("ZZ."):
+            miniseed_file = os.path.join(root, file)
+            
+            # Create the same directory structure in the output
+            relative_path = os.path.relpath(root, input_dir)
+            output_subdir = os.path.join(output_dir, relative_path)
+            os.makedirs(output_subdir, exist_ok=True)
+            
+            total_files += 1
+            if convert_miniseed_to_parquet(miniseed_file, output_subdir):
+                converted_files += 1
 
 print(f"Conversion complete!")
 print(f"Total files processed: {total_files}")
