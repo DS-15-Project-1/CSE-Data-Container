@@ -7,8 +7,3 @@ services:
     volumes:
       - /mnt:/mnt
       - /mnt/code/output:/mnt/code/output
-    command: python /app/mseed_parquet_ZZ.py
-    deploy:
-      resources:
-        limits:
-          memory: 3G

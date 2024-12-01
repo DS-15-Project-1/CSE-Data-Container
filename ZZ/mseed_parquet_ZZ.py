@@ -1,3 +1,11 @@
+import os
+from obspy import read
+import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
+import traceback
+from datetime import datetime
+
 def convert_channel_to_parquet(input_dir, output_dir):
     print(f"Processing channel data in {input_dir}")
     
@@ -10,16 +18,21 @@ def convert_channel_to_parquet(input_dir, output_dir):
         # Create the output file name
         output_file = os.path.join(output_dir, f"{channel}.parquet")
         
-        # Initialize lists to store data
-        networks = []
-        stations = []
-        locations = []
-        channels = []
-        starttimes = []
-        endtimes = []
-        sampling_rates = []
-        data = []
-        timestamps = []
+        # Initialize the table with metadata
+        metadata = {
+            'network': '',
+            'station': '',
+            'location': '',
+            'channel': channel,
+            'starttime': None,
+            'endtime': None,
+            'sampling_rate': None,
+            'data': [],
+            'timestamps': []
+        }
+        
+        # Initialize the PyArrow Table
+        table = pa.Table.from_dict(metadata)
         
         # Process each file in the input directory
         for file in os.listdir(input_dir):
@@ -31,37 +44,46 @@ def convert_channel_to_parquet(input_dir, output_dir):
                     st = read(input_file)
                     
                     # Extract metadata
-                    networks.append(st[0].stats.network)
-                    stations.append(st[0].stats.station)
-                    locations.append(st[0].stats.location)
-                    channels.append(st[0].stats.channel)
-                    starttimes.append(datetime.fromtimestamp(st[0].stats.starttime.timestamp))
-                    endtimes.append(datetime.fromtimestamp(st[0].stats.endtime.timestamp))
-                    sampling_rates.append(st[0].stats.sampling_rate)
-                    data.append(st[0].data)
-                    timestamps.append(st[0].times())
+                    network = st[0].stats.network
+                    station = st[0].stats.station
+                    location = st[0].stats.location
+                    start_time = st[0].stats.starttime
+                    end_time = st[0].stats.endtime
+                    sampling_rate = st[0].stats.sampling_rate
+                    
+                    # Convert UTCDateTime to datetime
+                    start_time = datetime.fromtimestamp(start_time.timestamp)
+                    end_time = datetime.fromtimestamp(end_time.timestamp)
+                    
+                    # Get timestamps
+                    timestamps = st[0].times()
+                    
+                    # Add data to the table
+                    table = pa.concat_tables([table, pa.Table.from_arrays(
+                        [network, station, location, [channel] * len(timestamps),
+                         [start_time] * len(timestamps), [end_time] * len(timestamps),
+                          [sampling_rate] * len(timestamps), timestamps, st[0].data],
+                        names=['network', 'station', 'location', 'channel', 'starttime', 'endtime',
+                              'sampling_rate', 'timestamps', 'data']
+                    )])
                     
                 except Exception as e:
                     print(f"Error processing {input_file}: {str(e)}")
                     traceback.print_exc()
         
-        # Create DataFrame
-        df = pd.DataFrame({
-            'network': networks,
-            'station': stations,
-            'location': locations,
-            'channel': channels,
-            'starttime': starttimes,
-            'endtime': endtimes,
-            'sampling_rate': sampling_rates,
-            'data': data,
-            'timestamps': timestamps
-        })
-        
-        # Convert DataFrame to PyArrow Table
-        table = pa.Table.from_pandas(df)
-        
         # Write the table to Parquet file
         pq.write_table(table, output_file)
         
         print(f"Successfully converted {channel} data: {output_file}")
+
+# Usage
+input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ"
+output_dir = "/mnt/code/output/ZZ"
+
+# Process each station directory
+for station in os.listdir(input_dir):
+    station_input_dir = os.path.join(input_dir, station)
+    station_output_dir = os.path.join(output_dir, station)
+    convert_channel_to_parquet(station_input_dir, station_output_dir)
+
+print("Conversion complete!")
