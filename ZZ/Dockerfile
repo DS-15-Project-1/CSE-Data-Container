@@ -1,18 +1,23 @@
-FROM continuumio/miniconda3
+FROM python:3.8-slim
 
 WORKDIR /app
 
-# Copy environment file
-COPY environment.yml .
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Create the environment
-RUN conda env create -f environment.yml
-
-# Activate the environment
-SHELL ["conda", "run", "-n", "myenv", "/bin/bash", "-c"]
-
-# Install additional packages via conda
-RUN conda install -c conda-forge pyarrow pandas numpy scipy matplotlib -y
+# Install Python packages
+RUN pip install --no-cache-dir \
+    obspy \
+    pyarrow \
+    pandas \
+    numpy \
+    scipy \
+    matplotlib \
+    wheel \
+    setuptools
 
 # Copy entrypoint script
 COPY entrypoint.sh /app/entrypoint.sh

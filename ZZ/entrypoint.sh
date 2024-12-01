@@ -18,13 +18,5 @@ python -c "import scipy; print(scipy.__version__)"
 echo "Matplotlib version:"
 python -c "import matplotlib; print(matplotlib.__version__)"
 
-# Activate the Conda environment
-source /opt/conda/etc/profile.d/conda.sh
-conda activate myenv
-
-# Print Conda environment information
-conda info --envs
-conda list
-
 # Run the Python script
 exec python /app/mseed_parquet_ZZ.py
