@@ -46,13 +46,13 @@ def convert_miniseed_to_parquet(miniseed_file, output_dir):
         print(f"Error processing {miniseed_file}: {str(e)}")
 
 # Define the input and output directories
-input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ"
-output_dir = "/mnt/code/output/2019"
+input_dir = "/mnt/data"
+output_dir = "/mnt/code/output"
 
 # Ensure the output directory exists
 os.makedirs(output_dir, exist_ok=True)
 
-# Process each miniseed file in the input directory
+# Process each miniseed file in the input directory and its subdirectories
 for root, dirs, files in os.walk(input_dir):
     for file in files:
         if file.endswith('.mseed'):
