@@ -15,11 +15,6 @@ def read_file_in_chunks(input_file, chunk_size=1000000):
             yield chunk
 
 def convert_file_to_parquet(input_file, output_file, chunk_size=1000000):
-    
-    print(f"Attempting to convert: {input_file}")
-    print(f"Processing file: {input_file}")
-    print(f"Output will be: {output_file}")
-
     try:
         # Debug logging
         print(f"Input file: {input_file}")
@@ -105,30 +100,34 @@ def convert_file_to_parquet(input_file, output_file, chunk_size=1000000):
         print(f"Error converting {input_file}: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
 
+def process_directory(input_dir, output_dir):
+    # Create the output directory if it doesn't exist
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Iterate over the directory structure
+    for root, dirs, files in os.walk(input_dir):
+        print(f"Searching for files in: {root}")
+        for file in files:
+            input_file = os.path.join(root, file)
+            rel_path = os.path.relpath(input_file, input_dir)
+            output_file = os.path.join(output_dir, rel_path).replace(os.path.splitext(file)[1], ".parquet")
+            
+            # Create the output directory if it doesn't exist
+            os.makedirs(os.path.dirname(output_file), exist_ok=True)
+            
+            # Convert the file
+            try:
+                convert_file_to_parquet(input_file, output_file)
+                print(f"Processed {input_file}")
+            except Exception as e:
+                print(f"Error processing {input_file}: {str(e)}")
+                print(f"Traceback: {traceback.format_exc()}")
+
 # Set the input and output directories
 input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ"
 output_dir = "/mnt/code/output/ZZ"
 
-# Create the output directory if it doesn't exist
-os.makedirs(output_dir, exist_ok=True)
-
-# Iterate over the directory structure
-for root, dirs, files in os.walk(input_dir):
-    print(f"Searching for files in: {root}")
-    for file in files:
-        input_file = os.path.join(root, file)
-        rel_path = os.path.relpath(input_file, input_dir)
-        output_file = os.path.join(output_dir, rel_path).replace(os.path.splitext(file)[1], ".parquet")
-        
-        # Create the output directory if it doesn't exist
-        os.makedirs(os.path.dirname(output_file), exist_ok=True)
-        
-        # Convert the file
-        try:
-            convert_file_to_parquet(input_file, output_file)
-            print(f"Processed {input_file}")
-        except Exception as e:
-            print(f"Error processing {input_file}: {str(e)}")
-            print(f"Traceback: {traceback.format_exc()}")
+# Process the directory
+process_directory(input_dir, output_dir)
 
 print("Conversion complete!")
