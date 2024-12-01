@@ -49,8 +49,10 @@ def convert_miniseed_to_parquet(miniseed_file, output_dir):
         pq.write_table(table, output_file)
         
         print(f"Converted {miniseed_file} to {output_file}")
+        return True
     except Exception as e:
         print(f"Error processing {miniseed_file}: {str(e)}")
+        return False
 
 # Define the input and output directories
 input_dir = "/mnt/data/SWP_Database_Current/2019/ZZ"
@@ -60,6 +62,8 @@ output_dir = "/mnt/code/output"
 os.makedirs(output_dir, exist_ok=True)
 
 # Process each miniseed file in the input directory and its subdirectories
+total_files = 0
+converted_files = 0
 for root, dirs, files in os.walk(input_dir):
     # Skip the "#recycle" directory
     if "#recycle" in root:
@@ -74,6 +78,11 @@ for root, dirs, files in os.walk(input_dir):
             output_subdir = os.path.join(output_dir, relative_path)
             os.makedirs(output_subdir, exist_ok=True)
             
-            convert_miniseed_to_parquet(miniseed_file, output_subdir)
+            total_files += 1
+            if convert_miniseed_to_parquet(miniseed_file, output_subdir):
+                converted_files += 1
 
-print("Conversion complete!")
+print(f"Conversion complete!")
+print(f"Total files processed: {total_files}")
+print(f"Files successfully converted: {converted_files}")
+print(f"Output directory: {output_dir}")
