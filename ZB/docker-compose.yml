@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 
 services:
   converter:
@@ -12,7 +12,6 @@ services:
       resources:
         limits:
           memory: 3G
-
 
 volumes:
   input_data:
