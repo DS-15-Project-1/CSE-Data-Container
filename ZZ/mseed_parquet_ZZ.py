@@ -3,6 +3,7 @@ from obspy import read
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
+import numpy as np
 
 def convert_miniseed_to_parquet(miniseed_file, output_dir):
     try:
@@ -19,6 +20,11 @@ def convert_miniseed_to_parquet(miniseed_file, output_dir):
         sampling_rate = st[0].stats.sampling_rate
         data = st[0].data
         
+        # Generate timestamps array
+        npts = len(data)
+        time_array = np.arange(0, npts) / sampling_rate
+        timestamps = st[0].stats.starttime + time_array
+        
         # Create DataFrame
         df = pd.DataFrame({
             'network': [network],
@@ -28,7 +34,8 @@ def convert_miniseed_to_parquet(miniseed_file, output_dir):
             'starttime': [starttime],
             'endtime': [endtime],
             'sampling_rate': [sampling_rate],
-            'data': [data]
+            'data': [data],
+            'timestamps': [timestamps]
         })
         
         # Convert DataFrame to PyArrow Table
@@ -54,9 +61,19 @@ os.makedirs(output_dir, exist_ok=True)
 
 # Process each miniseed file in the input directory and its subdirectories
 for root, dirs, files in os.walk(input_dir):
+    # Skip the "#recycle" directory
+    if "#recycle" in root:
+        continue
+    
     for file in files:
         if file.endswith('.mseed'):
             miniseed_file = os.path.join(root, file)
-            convert_miniseed_to_parquet(miniseed_file, output_dir)
+            
+            # Create the same directory structure in the output
+            relative_path = os.path.relpath(root, input_dir)
+            output_subdir = os.path.join(output_dir, relative_path)
+            os.makedirs(output_subdir, exist_ok=True)
+            
+            convert_miniseed_to_parquet(miniseed_file, output_subdir)
 
 print("Conversion complete!")
