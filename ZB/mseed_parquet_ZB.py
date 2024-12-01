@@ -15,6 +15,7 @@ def read_file_in_chunks(input_file, chunk_size=1000000):
             yield chunk
 
 def convert_file_to_parquet(input_file, output_file, chunk_size=1000000):
+    
     print(f"Attempting to convert: {input_file}")
     print(f"Processing file: {input_file}")
     print(f"Output will be: {output_file}")
@@ -26,6 +27,13 @@ def convert_file_to_parquet(input_file, output_file, chunk_size=1000000):
         print(f"File exists: {os.path.exists(input_file)}")
         print(f"Is file: {os.path.isfile(input_file)}")
         
+        # Check file readability
+        if os.access(input_file, os.R_OK):
+            print(f"File is readable: {input_file}")
+        else:
+            print(f"File is not readable: {input_file}")
+            return
+        
         # Check file contents
         with open(input_file, 'rb') as f:
             print(f"File size: {os.path.getsize(input_file)} bytes")
@@ -36,7 +44,11 @@ def convert_file_to_parquet(input_file, output_file, chunk_size=1000000):
         
         # Process the first chunk to get metadata
         first_chunk = next(chunks)
-        st = read(first_chunk)
+        try:
+            st = read(first_chunk)
+        except Exception as e:
+            print(f"Error reading file {input_file}: {str(e)}")
+            return
         
         # Extract metadata
         network = st[0].stats.network
@@ -94,14 +106,14 @@ def convert_file_to_parquet(input_file, output_file, chunk_size=1000000):
         print(f"Traceback: {traceback.format_exc()}")
 
 # Set the input and output directories
-input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZB"
-output_dir = "/mnt/code/output/ZB"
+input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ"
+output_dir = "/mnt/code/output/ZZ"
 
 # Create the output directory if it doesn't exist
 os.makedirs(output_dir, exist_ok=True)
 
 # Iterate over the directory structure
-for root, dirs, files in os.walk(input_file):
+for root, dirs, files in os.walk(input_dir):
     print(f"Searching for files in: {root}")
     for file in files:
         input_file = os.path.join(root, file)
