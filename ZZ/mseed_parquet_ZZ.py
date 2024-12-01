@@ -46,7 +46,7 @@ def convert_miniseed_to_parquet(miniseed_file, output_dir):
         print(f"Error processing {miniseed_file}: {str(e)}")
 
 # Define the input and output directories
-input_dir = "/mnt/data"
+input_dir = "/mnt/data/SWP_Database_Current/2019/ZZ"
 output_dir = "/mnt/code/output"
 
 # Ensure the output directory exists
