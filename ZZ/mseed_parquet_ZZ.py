@@ -1,11 +1,3 @@
-import os
-from obspy import read
-import pandas as pd
-import pyarrow as pa
-import pyarrow.parquet as pq
-import traceback
-from datetime import datetime
-
 def convert_channel_to_parquet(input_dir, output_dir):
     print(f"Processing channel data in {input_dir}")
     
@@ -33,28 +25,27 @@ def convert_channel_to_parquet(input_dir, output_dir):
         channel_dir = os.path.join(input_dir, channel)
         if os.path.isdir(channel_dir):
             for file in os.listdir(channel_dir):
-                if file.endswith('.D'):
-                    input_file = os.path.join(channel_dir, file)
+                input_file = os.path.join(channel_dir, file)
+                
+                try:
+                    print(f"Processing file: {input_file}")
+                    # Read the file
+                    st = read(input_file)
                     
-                    try:
-                        print(f"Processing file: {input_file}")
-                        # Read the file
-                        st = read(input_file)
-                        
-                        # Extract metadata
-                        networks.append(st[0].stats.network)
-                        stations.append(st[0].stats.station)
-                        locations.append(st[0].stats.location)
-                        channels.append(st[0].stats.channel)
-                        starttimes.append(datetime.fromtimestamp(st[0].stats.starttime.timestamp))
-                        endtimes.append(datetime.fromtimestamp(st[0].stats.endtime.timestamp))
-                        sampling_rates.append(st[0].stats.sampling_rate)
-                        data.append(st[0].data)
-                        timestamps.append(st[0].times())
-                        
-                    except Exception as e:
-                        print(f"Error processing {input_file}: {str(e)}")
-                        traceback.print_exc()
+                    # Extract metadata
+                    networks.append(st[0].stats.network)
+                    stations.append(st[0].stats.station)
+                    locations.append(st[0].stats.location)
+                    channels.append(st[0].stats.channel)
+                    starttimes.append(datetime.fromtimestamp(st[0].stats.starttime.timestamp))
+                    endtimes.append(datetime.fromtimestamp(st[0].stats.endtime.timestamp))
+                    sampling_rates.append(st[0].stats.sampling_rate)
+                    data.append(st[0].data)
+                    timestamps.append(st[0].times())
+                    
+                except Exception as e:
+                    print(f"Error processing {input_file}: {str(e)}")
+                    traceback.print_exc()
         
         if networks:
             # Create DataFrame
