@@ -65,10 +65,7 @@ os.makedirs(output_dir, exist_ok=True)
 total_files = 0
 converted_files = 0
 for root, dirs, files in os.walk(input_dir):
-    # Skip the "#recycle" directory
-    if "#recycle" in root:
-        continue
-    
+    print(f"Processing directory: {root}")
     for file in files:
         if file.endswith('.mseed'):
             miniseed_file = os.path.join(root, file)
