@@ -9,8 +9,6 @@ COPY environment.yml .
 RUN conda env create -f environment.yml
 
 # Copy entrypoint script
-RUN pip install --upgrade pyarrow
-
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 

@@ -1,9 +1,13 @@
 #!/bin/bash
 set -e
 
-# Activate the Conda environment
-source /opt/conda/etc/profile.d/conda.sh
-conda activate myenv
+# Print environment information
+echo "Current directory: $(pwd)"
+echo "Contents of current directory:"
+ls -la
+echo "Python version:"
+python --version
+echo "PyArrow version:"
+python -c "import pyarrow; print(pyarrow.__version__)"
 
-# Run the Python script
-exec python /app/mseed_parquet_ZZ.py
+# Activate the Conda environment
