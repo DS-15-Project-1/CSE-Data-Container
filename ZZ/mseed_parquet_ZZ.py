@@ -5,6 +5,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import traceback
 from datetime import datetime
+
 def convert_channel_to_parquet(input_dir, output_dir):
     print(f"Processing channel data in {input_dir}")
     
@@ -34,6 +35,7 @@ def convert_channel_to_parquet(input_dir, output_dir):
                 input_file = os.path.join(input_dir, file)
                 
                 try:
+                    print(f"Processing file: {input_file}")
                     # Read the file
                     st = read(input_file)
                     
@@ -52,23 +54,39 @@ def convert_channel_to_parquet(input_dir, output_dir):
                     print(f"Error processing {input_file}: {str(e)}")
                     traceback.print_exc()
         
-        # Create DataFrame
-        df = pd.DataFrame({
-            'network': networks,
-            'station': stations,
-            'location': locations,
-            'channel': channels,
-            'starttime': starttimes,
-            'endtime': endtimes,
-            'sampling_rate': sampling_rates,
-            'data': data,
-            'timestamps': timestamps
-        })
-        
-        # Convert DataFrame to PyArrow Table
-        table = pa.Table.from_pandas(df)
-        
-        # Write the table to Parquet file
-        pq.write_table(table, output_file)
-        
-        print(f"Successfully converted {channel} data: {output_file}")
+        if networks:
+            # Create DataFrame
+            df = pd.DataFrame({
+                'network': networks,
+                'station': stations,
+                'location': locations,
+                'channel': channels,
+                'starttime': starttimes,
+                'endtime': endtimes,
+                'sampling_rate': sampling_rates,
+                'data': data,
+                'timestamps': timestamps
+            })
+            
+            # Convert DataFrame to PyArrow Table
+            table = pa.Table.from_pandas(df)
+            
+            # Write the table to Parquet file
+            pq.write_table(table, output_file)
+            
+            print(f"Successfully converted {channel} data: {output_file}")
+        else:
+            print(f"No data found for channel {channel} in {input_dir}")
+
+# Usage
+input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ"
+output_dir = "/mnt/code/output/ZZ"
+
+# Process each station directory
+for station in os.listdir(input_dir):
+    station_input_dir = os.path.join(input_dir, station)
+    station_output_dir = os.path.join(output_dir, station)
+    print(f"Processing station: {station}")
+    convert_channel_to_parquet(station_input_dir, station_output_dir)
+
+print("Conversion complete!")
