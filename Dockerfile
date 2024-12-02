@@ -1,5 +1,7 @@
-# Start with a Python base image
-FROM --platform=linux/arm64 alpine:latest
+
+ARG TARGETARCH=arm64
+FROM --platform=linux/${TARGETARCH} alpine:latest
+
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
