@@ -1,5 +1,5 @@
 # Start with a Python base image
-FROM python:3.7-slim
+FROM --platform=linux/arm64 alpine:latest
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
