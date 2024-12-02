@@ -13,7 +13,6 @@ RUN python -m pip install --upgrade pip wheel setuptools
 RUN pip install --no-cache-dir \
     obspy \
     pandas \
-    tensorflow \
     pyarrow
 
 # Copy the conversion script
