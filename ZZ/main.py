@@ -4,7 +4,6 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-
 def convert_miniseed_to_parquet(miniseed_file, output_dir):
     try:
         # Read the miniseed file
