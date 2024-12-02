@@ -3,7 +3,6 @@ from obspy import read
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
-from datetime import datetime, timedelta
 
 def convert_miniseed_to_parquet(miniseed_file, output_dir):
     try:
@@ -20,11 +19,6 @@ def convert_miniseed_to_parquet(miniseed_file, output_dir):
         sampling_rate = st[0].stats.sampling_rate
         data = st[0].data
         
-        # Generate timestamps array using Python's datetime
-        npts = len(data)
-        time_step = timedelta(seconds=1/sampling_rate)
-        timestamps = [starttime + i * time_step for i in range(npts)]
-        
         # Create DataFrame
         df = pd.DataFrame({
             'network': [network],
@@ -34,8 +28,7 @@ def convert_miniseed_to_parquet(miniseed_file, output_dir):
             'starttime': [starttime],
             'endtime': [endtime],
             'sampling_rate': [sampling_rate],
-            'data': [data],
-            'timestamps': [timestamps]
+            'data': [data]
         })
         
         # Convert DataFrame to PyArrow Table
@@ -55,8 +48,8 @@ def convert_miniseed_to_parquet(miniseed_file, output_dir):
         return False
 
 # Define the input and output directories
-input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ"
-output_dir = "/mnt/code/output"
+input_dir = os.environ.get('INPUT_DIR', '/mnt/data/SWP_Seismic_Database_Current/2019/ZZ')
+output_dir = os.environ.get('OUTPUT_DIR', '/mnt/code/output')
 
 # Ensure the output directory exists
 os.makedirs(output_dir, exist_ok=True)

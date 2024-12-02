@@ -1,9 +1,11 @@
 version: '3'
 
 services:
-  converter:
+  app:
     build: .
-    container_name: "miniseed-to-parquet-converter-ZZ"
     volumes:
-      - /mnt:/mnt
-      - /mnt/code/output:/mnt/code/output
+      - ./input:/mnt/data
+      - ./output:/mnt/code
+    environment:
+      - INPUT_DIR=/mnt/data/SWP_Seismic_Database_Current/2019/ZZ
+      - OUTPUT_DIR=/mnt/code/output
