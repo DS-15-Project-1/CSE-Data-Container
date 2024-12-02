@@ -67,11 +67,6 @@ def convert_file_to_parquet(input_file, output_file):
         print(f"Error converting: {input_file}")
         print(traceback.format_exc())
         print(f"Error message: {str(e)}")
-        print(f"Output file: {output_file}")
-        print(f"Output file exists: {os.path.exists(output_file)}")
-        print(f"Output file is file: {os.path.isfile(output_file)}")
-        print(f"Output file size: {os.path.getsize(output_file)} bytes")
-        print(f"First few bytes: {open(output_file, 'rb').read(20)}")
 
 # Set the input and output directories
 input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019"
