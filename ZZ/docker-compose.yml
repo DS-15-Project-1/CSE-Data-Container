@@ -5,6 +5,10 @@ services:
     build: .
     container_name: "miniseed-to-parquet-converter-ZZ"
     volumes:
-      - /mnt/data:/app/data
-      - /mnt/code/output:/app/output
-    command: python main.py
+      - /mnt/data:/mnt/data
+      - /mnt/code/output:/mnt/code/output
+    command: python /app/main.py
+    deploy:
+      resources:
+        limits:
+          memory: 3G
