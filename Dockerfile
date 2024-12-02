@@ -26,7 +26,7 @@ RUN pip install --no-cache-dir \
     pandas \
     pyarrow
 # Copy the conversion script
-COPY convert_miniseed_to_parquet.py /app/convert_miniseed_to_parquet.py
+COPY mseed_parquet.py /app/mseed_parquet.py
 
 # Set the default command to run when starting the container
 CMD ["python", "/app/convert_miniseed_to_parquet.py"]
