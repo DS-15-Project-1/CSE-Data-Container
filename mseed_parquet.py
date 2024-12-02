@@ -24,14 +24,14 @@ def convert_file_to_parquet(input_file, output_file):
         print(f"Successfully read: {input_file}")
         print(f"Number of traces: {len(st)}")
         print(f"Number of samples: {len(st[0].data)}")
-        
+
         # Extract metadata
         network = st[0].stats.network
         station = st[0].stats.station
         location = st[0].stats.location
         channel = st[0].stats.channel
-        start_time = st[0].stats.starttime
-        end_time = st[0].stats.endtime
+        start_time = st[0].stats.starttime.isoformat()
+        end_time = st[0].stats.endtime.isoformat()
         sampling_rate = st[0].stats.sampling_rate
         
         # Create DataFrame
@@ -45,11 +45,12 @@ def convert_file_to_parquet(input_file, output_file):
             'sampling_rate': [sampling_rate],
             'data': [st[0].data]
         })
-        
+
         # Write to Parquet
         table = pa.Table.from_pandas(df)
         pq.write_table(table, output_file)
         print(f"Successfully converted: {input_file} -> {output_file}")
+
     except Exception as e:
         print(f"Error converting {input_file}: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
