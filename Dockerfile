@@ -25,7 +25,10 @@ RUN pip install --no-cache-dir \
     obspy \
     pandas \
     pyarrow
-    
+
+#Install tensorflow version that works with host computer specs
+RUN pip install tensorflow==1.15
+
 # Copy the conversion script
 COPY mseed_parquet.py /app/mseed_parquet.py
 
