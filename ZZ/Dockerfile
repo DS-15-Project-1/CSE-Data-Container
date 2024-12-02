@@ -7,6 +7,9 @@ RUN apt-get update && apt-get install -y \
     g++ \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+RUN python -m venv /app/venv
+ENV PATH="/app/venv/bin:$PATH"
+
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 
 ENV CFLAGS="-mno-avx2"
@@ -20,10 +23,6 @@ RUN pip install --no-cache-dir \
     scipy \
     matplotlib \
     psutil
-
-RUN python -m venv /app/venv
-ENV PATH="/app/venv/bin:$PATH"
-
 
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
