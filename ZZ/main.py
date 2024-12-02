@@ -51,8 +51,22 @@ def convert_miniseed_to_parquet(miniseed_file, output_dir):
 input_dir = os.environ.get('INPUT_DIR', '/mnt/data/SWP_Seismic_Database_Current/2019/ZZ')
 output_dir = os.environ.get('OUTPUT_DIR', '/mnt/code/output')
 
+# Print environment variables
+print(f"INPUT_DIR: {input_dir}")
+print(f"OUTPUT_DIR: {output_dir}")
+
 # Ensure the output directory exists
 os.makedirs(output_dir, exist_ok=True)
+
+# Print input directory contents
+print("Input directory contents:")
+try:
+    for root, dirs, files in os.walk(input_dir):
+        print(f"Directory: {root}")
+        for file in files:
+            print(f"  {file}")
+except Exception as e:
+    print(f"Error accessing input directory: {str(e)}")
 
 # Process each file in the input directory and its subdirectories
 total_files = 0
@@ -76,10 +90,3 @@ print(f"Conversion complete!")
 print(f"Total files processed: {total_files}")
 print(f"Files successfully converted: {converted_files}")
 print(f"Output directory: {output_dir}")
-
-# Print directory contents
-print("Directory contents:")
-for root, dirs, files in os.walk(input_dir):
-    print(f"Directory: {root}")
-    for file in files:
-        print(f"  {file}")
