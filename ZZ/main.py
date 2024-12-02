@@ -3,36 +3,26 @@ from pathlib import Path
 import obspy
 import pyarrow
 import pandas as pd
+import logging
 
-def inspect_directory(input_dir):
-    print(f"Inspecting directory: {input_dir}")
-    try:
-        print("Contents of the directory:")
-        for item in os.listdir(input_dir):
-            full_path = os.path.join(input_dir, item)
-            print(f"  - {item} (is file: {os.path.isfile(full_path)})")
-        
-        if not os.listdir(input_dir):
-            print(f"\nDirectory {input_dir} is empty.")
-        
-    except FileNotFoundError:
-        print(f"Error: Directory {input_dir} not found.")
-    except PermissionError:
-        print(f"Error: Permission denied to access directory {input_dir}")
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def process_directory(input_dir, output_dir):
-    print(f"Processing directory: {input_dir}")
+    logger.info(f"Processing directory: {input_dir}")
     try:
         for root, dirs, files in os.walk(input_dir):
             for file in files:
                 input_file = os.path.join(root, file)
                 try:
-                    print(f"Processing file: {input_file}")
+                    logger.info(f"Processing file: {input_file}")
                     
                     # Read the mseed file
                     st = obspy.read(input_file)
+                    
+                    # Extract channel name from the filename
+                    channel = file.split('.')[0].split('.')[-1]
+                    logger.info(f"Channel detected: {channel}")
                     
                     # Convert to pandas DataFrame
                     df = pd.DataFrame({
@@ -42,21 +32,24 @@ def process_directory(input_dir, output_dir):
                     
                     # Create output file path
                     rel_path = os.path.relpath(input_file, input_dir)
-                    output_file = os.path.join(output_dir, rel_path).replace(os.path.splitext(file)[1], ".parquet")
+                    output_file = os.path.join(output_dir, channel, rel_path).replace(os.path.splitext(file)[1], ".parquet")
+                    
+                    # Create necessary subdirectories
+                    os.makedirs(os.path.dirname(output_file), exist_ok=True)
                     
                     # Write to Parquet
                     df.to_parquet(output_file)
                     
-                    print(f"File processed: {input_file}")
-                    print(f"Output file: {output_file}")
+                    logger.info(f"File processed: {input_file}")
+                    logger.info(f"Output file: {output_file}")
                 
                 except Exception as e:
-                    print(f"Error processing {input_file}: {str(e)}")
+                    logger.error(f"Error processing {input_file}: {str(e)}")
         
-        print("Directory processing complete.")
+        logger.info("Directory processing complete.")
     
     except Exception as e:
-        print(f"Error processing directory: {str(e)}")
+        logger.error(f"Error processing directory: {str(e)}")
 
 def main():
     input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ"
