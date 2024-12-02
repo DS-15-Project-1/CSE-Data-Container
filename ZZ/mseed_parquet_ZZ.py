@@ -8,7 +8,7 @@ import numpy as np
 def convert_miniseed_to_parquet(miniseed_file, output_dir):
     try:
         # Read the miniseed file
-        st = read(miniseed_file)
+        st = read(miniseed_file, format='MSEED')
         
         # Extract metadata
         network = st[0].stats.network
@@ -53,6 +53,7 @@ def convert_miniseed_to_parquet(miniseed_file, output_dir):
     except Exception as e:
         print(f"Error processing {miniseed_file}: {str(e)}")
         return False
+
 
 # Define the input and output directories
 input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ"
