@@ -1,11 +1,29 @@
 version: '3'
 
 services:
-  app:
+  converter:
     build: .
+    container_name: "miniseed-to-parquet-converter-ZZ"
     volumes:
-      - ./input:/mnt/data/SWP_Seismic_Database_Current/2019/ZZ
-      - ./output:/mnt/code/output
-    environment:
-      - INPUT_DIR=/mnt/data/SWP_Seismic_Database_Current/2019/ZZ
-      - OUTPUT_DIR=/mnt/code/output
+      - /mnt/data :/mnt/data
+      - /mnt/code/output/ :/mnt/code/output
+    command: python /notebooks/main.py
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+
+volumes:
+  input_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/
+
+  output_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/code/output

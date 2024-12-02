@@ -1,15 +1,18 @@
-FROM python:3.12-slim
+FROM continuumio/miniconda3
 
-WORKDIR /app
+ENV DEBIAN_FRONTEND=noninteractive
 
-COPY . /app
+WORKDIR /notebooks
 
-RUN pip install --no-cache-dir \
-    obspy \
-    pandas \
-    numpy \
-    scipy \
-    matplotlib \
-    psutil
+RUN conda update -n base -c defaults conda && \
+    conda install -c conda-forge obspy pandas pyarrow numpy matplotlib scipy -y && \
+    conda clean --all -y
 
-CMD ["python", "main.py"]
+RUN pip install --no-binary=:all: wheel setuptools
+
+RUN apt-get update && apt-get install -y gcc g++ && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+COPY main.py /notebooks/main.py
+
+CMD ["--memory", "3g", "python", "/notebooks/main.py"]
