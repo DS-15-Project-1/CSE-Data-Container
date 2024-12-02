@@ -1,14 +1,31 @@
-version: '3'
+version: "3"
 
 services:
   converter:
     build: .
-    container_name: "miniseed-to-parquet-converter-ZZ"
+    container_name: "miniseed-to-parquet-converter"
     volumes:
-      - /mnt/data:/mnt/data
+      - /mnt:/mnt
       - /mnt/code/output:/mnt/code/output
-    command: python /app/main.py
-    deploy:
-      resources:
-        limits:
-          memory: 3G
+    command: python /app/mseed_parquet.py
+  converter-2:
+    build: .
+    container_name: "miniseed-to-parquet-converter"
+    volumes:
+      - /mnt:/mnt
+      - /mnt/code/output:/mnt/code/output
+    command: python /app/mseed_parquet.py
+
+volumes:
+  input_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt
+  output_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/code/output

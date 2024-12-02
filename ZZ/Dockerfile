@@ -1,18 +1,32 @@
-FROM continuumio/miniconda3
+# Start with a Python base image
+FROM python:3.12-slim
 
+# Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Set the working directory
 WORKDIR /app
 
-RUN conda update -n base -c defaults conda && \
-    conda install -c conda-forge obspy pandas pyarrow numpy matplotlib scipy -y && \
-    conda clean --all -y
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    wget \
+    curl \
+    unzip \
+    git \
+    build-essential \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-binary=:all: wheel setuptools
+# Upgrade pip and install wheel
+RUN python -m pip install --upgrade pip wheel setuptools
 
-RUN apt-get update && apt-get install -y gcc g++ && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+# Install required Python packages
+RUN pip install --no-cache-dir \
+    obspy \
+    pandas \
+    pyarrow
+# Copy the conversion script
+COPY convert_miniseed_to_parquet.py /app/convert_miniseed_to_parquet.py
 
-COPY main.py .
-
-CMD ["python", "main.py"]
+# Set the default command to run when starting the container
+CMD ["python", "/app/convert_miniseed_to_parquet.py"]
