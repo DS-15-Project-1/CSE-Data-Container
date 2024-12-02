@@ -7,23 +7,8 @@ services:
     volumes:
       - /mnt/data:/mnt/data
       - /mnt/code/output:/mnt/code/output
-    command: python /app/main.py
+    command: python /notebooks/main.py
     deploy:
       resources:
         limits:
           memory: 3G
-
-volumes:
-  input_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /mnt/data
-
-  output_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /mnt/code/output
