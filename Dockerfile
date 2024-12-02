@@ -1,7 +1,5 @@
-
 ARG TARGETARCH=arm64
-FROM --platform=linux/${TARGETARCH} alpine:latest
-
+FROM --platform=linux/${TARGETARCH} debian:bullseye-slim
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
@@ -28,7 +26,7 @@ RUN pip install --no-cache-dir \
     pandas \
     pyarrow
 
-#Install tensorflow version that works with host computer specs
+# Install tensorflow version that works with host computer specs
 RUN pip install tensorflow==1.15
 
 # Copy the conversion script
