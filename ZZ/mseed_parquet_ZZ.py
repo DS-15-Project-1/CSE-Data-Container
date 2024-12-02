@@ -3,12 +3,12 @@ from obspy import read
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
-import numpy as np
+from datetime import datetime, timedelta
 
 def convert_miniseed_to_parquet(miniseed_file, output_dir):
     try:
         # Read the miniseed file
-        st = read(miniseed_file, format='MSEED')
+        st = read(miniseed_file)
         
         # Extract metadata
         network = st[0].stats.network
@@ -20,10 +20,10 @@ def convert_miniseed_to_parquet(miniseed_file, output_dir):
         sampling_rate = st[0].stats.sampling_rate
         data = st[0].data
         
-        # Generate timestamps array
+        # Generate timestamps array using Python's datetime
         npts = len(data)
-        time_array = np.arange(0, npts) / sampling_rate
-        timestamps = st[0].stats.starttime + time_array
+        time_step = timedelta(seconds=1/sampling_rate)
+        timestamps = [starttime + i * time_step for i in range(npts)]
         
         # Create DataFrame
         df = pd.DataFrame({
@@ -53,7 +53,6 @@ def convert_miniseed_to_parquet(miniseed_file, output_dir):
     except Exception as e:
         print(f"Error processing {miniseed_file}: {str(e)}")
         return False
-
 
 # Define the input and output directories
 input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ"
