@@ -48,7 +48,6 @@ def main():
     print(f"INPUT_DIR: {input_dir}")
     print(f"OUTPUT_DIR: {output_dir}")
     
-    inspect_directory(input_dir)
     process_directory(input_dir, output_dir)
 
     print("\nConversion complete!")
