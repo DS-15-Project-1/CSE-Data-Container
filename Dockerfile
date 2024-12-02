@@ -25,6 +25,7 @@ RUN pip install --no-cache-dir \
     obspy \
     pandas \
     pyarrow
+    
 # Copy the conversion script
 COPY mseed_parquet.py /app/mseed_parquet.py
 
