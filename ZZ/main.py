@@ -1,8 +1,26 @@
 import os
 from pathlib import Path
-import shutil
 import obspy
 import pyarrow.parquet as pq
+import pandas as pd
+
+def inspect_directory(input_dir):
+    print(f"Inspecting directory: {input_dir}")
+    try:
+        print("Contents of the directory:")
+        for item in os.listdir(input_dir):
+            full_path = os.path.join(input_dir, item)
+            print(f"  - {item} (is file: {os.path.isfile(full_path)})")
+        
+        if not os.listdir(input_dir):
+            print(f"\nDirectory {input_dir} is empty.")
+        
+    except FileNotFoundError:
+        print(f"Error: Directory {input_dir} not found.")
+    except PermissionError:
+        print(f"Error: Permission denied to access directory {input_dir}")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
 
 def process_directory(input_dir, output_dir):
     print(f"Processing directory: {input_dir}")
@@ -11,23 +29,23 @@ def process_directory(input_dir, output_dir):
             for file in files:
                 input_file = os.path.join(root, file)
                 try:
-                    # Your original file processing logic
                     print(f"Processing file: {input_file}")
                     
                     # Read the mseed file
                     st = obspy.read(input_file)
                     
                     # Convert to pandas DataFrame
-                    df = st.to_pandas()
-                    
-                    # Convert to Parquet
-                    table = pq.Table.from_pandas(df)
+                    df = pd.DataFrame({
+                        'time': st[0].times('matplotlib'),
+                        'data': st[0].data
+                    })
                     
                     # Create output file path
                     rel_path = os.path.relpath(input_file, input_dir)
                     output_file = os.path.join(output_dir, rel_path).replace(os.path.splitext(file)[1], ".parquet")
                     
                     # Write to Parquet
+                    table = pq.Table.from_pandas(df)
                     pq.write_table(table, output_file)
                     
                     print(f"File processed: {input_file}")
@@ -48,6 +66,7 @@ def main():
     print(f"INPUT_DIR: {input_dir}")
     print(f"OUTPUT_DIR: {output_dir}")
     
+    inspect_directory(input_dir)
     process_directory(input_dir, output_dir)
 
     print("\nConversion complete!")
