@@ -1,5 +1,3 @@
-pip install /tmp/tensorflow_pkg/tensorflow-*.whl
-
 import os
 from obspy import read
 import pandas as pd
