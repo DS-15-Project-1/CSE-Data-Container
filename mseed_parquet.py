@@ -8,10 +8,23 @@ import traceback
 def convert_file_to_parquet(input_file, output_file):
     print(f"Attempting to convert: {input_file}")
     try:
+        # Debug logging
+        print(f"Input file: {input_file}")
+        print(f"Output file: {output_file}")
+        print(f"File exists: {os.path.exists(input_file)}")
+        print(f"Is file: {os.path.isfile(input_file)}")
+        
+        # Check file contents
+        with open(input_file, 'rb') as f:
+            print(f"File size: {os.path.getsize(input_file)} bytes")
+            print(f"First few bytes: {f.read(20)}")
+        
         # Read the file
         st = read(input_file)
         print(f"Successfully read: {input_file}")
-        
+        print(f"Number of traces: {len(st)}")
+        print(f"Number of samples: {len(st[0].data)}")
+
         # Extract metadata
         network = st[0].stats.network
         station = st[0].stats.station
@@ -32,7 +45,7 @@ def convert_file_to_parquet(input_file, output_file):
             'sampling_rate': [sampling_rate],
             'data': [st[0].data]
         })
-
+        
         # Check if the Parquet file already exists
         if os.path.exists(output_file):
             # Read existing data
@@ -40,6 +53,7 @@ def convert_file_to_parquet(input_file, output_file):
             existing_df = existing_table.to_pandas()
             # Append new data
             df = pd.concat([existing_df, df], ignore_index=True)
+
 
         # Write to Parquet
         table = pa.Table.from_pandas(df)
