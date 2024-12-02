@@ -9,16 +9,7 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Python packages
-RUN pip install --no-cache-dir \
-    obspy \
-    pyarrow \
-    pandas \
-    numpy \
-    scipy \
-    matplotlib \
-    wheel \
-    setuptools \ 
-    psutil
+RUN pip install --no-cache-dir obspy pyarrow pandas numpy scipy matplotlib wheel setuptools psutil
 
 # Copy entrypoint script
 COPY entrypoint.sh /app/entrypoint.sh
