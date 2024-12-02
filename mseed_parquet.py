@@ -46,14 +46,6 @@ def convert_file_to_parquet(input_file, output_file):
             'data': [st[0].data]
         })
         
-        # Check if the Parquet file already exists
-        if os.path.exists(output_file):
-            # Read existing data
-            existing_table = pq.read_table(output_file)
-            existing_df = existing_table.to_pandas()
-            # Append new data
-            df = pd.concat([existing_df, df], ignore_index=True)
-
 
         # Write to Parquet
         table = pa.Table.from_pandas(df)
