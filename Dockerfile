@@ -29,4 +29,4 @@ RUN pip install --no-cache-dir \
 COPY mseed_parquet.py /app/mseed_parquet.py
 
 # Set the default command to run when starting the container
-CMD ["python", "/app/convert_miniseed_to_parquet.py"]
+CMD ["python", "/app/mseed_parquet.py"]
