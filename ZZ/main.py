@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 import obspy
-import pyarrow.parquet as pq
+import pyarrow
 import pandas as pd
 
 def inspect_directory(input_dir):
@@ -45,8 +45,7 @@ def process_directory(input_dir, output_dir):
                     output_file = os.path.join(output_dir, rel_path).replace(os.path.splitext(file)[1], ".parquet")
                     
                     # Write to Parquet
-                    table = pq.Table.from_pandas(df)
-                    pq.write_table(table, output_file)
+                    df.to_parquet(output_file)
                     
                     print(f"File processed: {input_file}")
                     print(f"Output file: {output_file}")

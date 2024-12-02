@@ -15,4 +15,4 @@ RUN apt-get update && apt-get install -y gcc g++ && \
 
 COPY main.py .
 
-CMD ["--memory", "3g", "python", "main.py"]
+CMD ["python", "main.py"]
