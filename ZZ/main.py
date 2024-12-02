@@ -74,7 +74,7 @@ converted_files = 0
 for root, dirs, files in os.walk(input_dir):
     print(f"Processing directory: {root}")
     for file in files:
-        if file.startswith("ZZ."):
+        if file.startswith(""):
             miniseed_file = os.path.join(root, file)
             
             # Create the same directory structure in the output
