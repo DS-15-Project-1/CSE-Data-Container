@@ -1,8 +1,6 @@
 import os
 from obspy import read
 import pandas as pd
-import pyarrow as pa
-import pyarrow.parquet as pq
 import traceback
 
 def convert_file_to_parquet(input_file, output_file):
@@ -46,16 +44,17 @@ def convert_file_to_parquet(input_file, output_file):
             'data': [st[0].data]
         })
 
-        # Write to Parquet
-        table = pa.Table.from_pandas(df)
+        # Convert starttime and endtime to datetime strings
+        df['starttime'] = df['starttime'].apply(lambda x: x.strftime('%Y-%m-%d %H:%M:%S.%f'))
+        df['endtime'] = df['endtime'].apply(lambda x: x.strftime('%Y-%m-%d %H:%M:%S.%f'))
 
-        # Append to Parquet if exists
+        # Write to Parquet
         if os.path.exists(output_file):
-            existing_table = pq.read_table(output_file)
-            combined_table = pa.concat_tables([existing_table, table])
-            pq.write_table(combined_table, output_file)
+            existing_df = pd.read_parquet(output_file)
+            combined_df = pd.concat([existing_df, df])
+            combined_df.to_parquet(output_file, index=False)
         else:
-            pq.write_table(table, output_file)
+            df.to_parquet(output_file, index=False)
 
         print(f"Successfully converted: {input_file} -> {output_file}")
     except Exception as e:
