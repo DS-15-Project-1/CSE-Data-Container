@@ -5,7 +5,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import traceback
 
-def convert_files_to_parquet(directory, output_file):
+def convert_directory_to_parquet(directory, output_file):
     print(f"Processing directory: {directory}")
     dfs = []
     
@@ -68,6 +68,6 @@ for subdir in os.listdir(input_dir):
     subdir_path = os.path.join(input_dir, subdir)
     if os.path.isdir(subdir_path):
         output_file = os.path.join(output_dir, f"{subdir}.parquet")
-        convert_files_to_parquet(subdir_path, output_file)
+        convert_directory_to_parquet(subdir_path, output_file)
 
 print("Conversion complete!")
