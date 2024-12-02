@@ -5,9 +5,9 @@ services:
     build: .
     container_name: "miniseed-to-parquet-converter-ZZ"
     volumes:
-      - /mnt/data :/mnt/data
-      - /mnt/code/output/ :/mnt/code/output
-    command: python /notebooks/main.py
+      - /mnt/data:/mnt/data
+      - /mnt/code/output:/mnt/code/output
+    command: python /app/main.py
     deploy:
       resources:
         limits:
@@ -19,7 +19,7 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /mnt/
+      device: /mnt/data
 
   output_data:
     driver: local
