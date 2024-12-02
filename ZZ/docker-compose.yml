@@ -8,18 +8,3 @@ services:
       - /mnt/data:/app/data
       - /mnt/code/output:/app/output
     command: python main.py
-
-volumes:
-  input_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /mnt/data
-
-  output_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /mnt/code/output
