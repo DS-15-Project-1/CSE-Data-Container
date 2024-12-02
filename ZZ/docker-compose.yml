@@ -4,8 +4,8 @@ services:
   app:
     build: .
     volumes:
-      - ./input:/mnt/data
-      - ./output:/mnt/code
+      - ./input:/mnt/data/SWP_Seismic_Database_Current/2019/ZZ
+      - ./output:/mnt/code/output
     environment:
       - INPUT_DIR=/mnt/data/SWP_Seismic_Database_Current/2019/ZZ
       - OUTPUT_DIR=/mnt/code/output
