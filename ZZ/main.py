@@ -1,8 +1,6 @@
 import os
 from obspy import read
 import pandas as pd
-import pyarrow as pa
-import pyarrow.parquet as pq
 
 def convert_miniseed_to_parquet(miniseed_file, output_dir):
     try:
@@ -31,15 +29,12 @@ def convert_miniseed_to_parquet(miniseed_file, output_dir):
             'data': [data]
         })
         
-        # Convert DataFrame to PyArrow Table
-        table = pa.Table.from_pandas(df)
-        
         # Create output filename
         base_name = os.path.basename(miniseed_file)
         output_file = os.path.join(output_dir, f"{base_name}.parquet")
         
-        # Write the table to Parquet file
-        pq.write_table(table, output_file)
+        # Write the DataFrame to Parquet file
+        df.to_parquet(output_file)
         
         print(f"Converted {miniseed_file} to {output_file}")
         return True
@@ -74,17 +69,16 @@ converted_files = 0
 for root, dirs, files in os.walk(input_dir):
     print(f"Processing directory: {root}")
     for file in files:
-        if file.startswith(""):
-            miniseed_file = os.path.join(root, file)
-            
-            # Create the same directory structure in the output
-            relative_path = os.path.relpath(root, input_dir)
-            output_subdir = os.path.join(output_dir, relative_path)
-            os.makedirs(output_subdir, exist_ok=True)
-            
-            total_files += 1
-            if convert_miniseed_to_parquet(miniseed_file, output_subdir):
-                converted_files += 1
+        miniseed_file = os.path.join(root, file)
+        
+        # Create the same directory structure in the output
+        relative_path = os.path.relpath(root, input_dir)
+        output_subdir = os.path.join(output_dir, relative_path)
+        os.makedirs(output_subdir, exist_ok=True)
+        
+        total_files += 1
+        if convert_miniseed_to_parquet(miniseed_file, output_subdir):
+            converted_files += 1
 
 print(f"Conversion complete!")
 print(f"Total files processed: {total_files}")
