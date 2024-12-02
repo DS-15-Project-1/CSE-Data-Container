@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -21,10 +21,15 @@ RUN pip install --no-cache-dir \
     matplotlib \
     psutil
 
+RUN python -m venv /app/venv
+ENV PATH="/app/venv/bin:$PATH"
+
+
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
 COPY mseed_parquet_ZZ.py /app/mseed_parquet_ZZ.py
 RUN chmod 644 /app/mseed_parquet_ZZ.py
 
-ENTRYPOINT ["/app/entrypoint.sh"]
+CMD ["strace", "-f", "/app/entrypoint.sh"]
+
