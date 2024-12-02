@@ -1,4 +1,4 @@
-%%pip install /tmp/tensorflow_pkg/tensorflow-*.whl
+pip install /tmp/tensorflow_pkg/tensorflow-*.whl
 
 import os
 from obspy import read

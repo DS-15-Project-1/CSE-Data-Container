@@ -1,5 +1,5 @@
 # Start with a Python base image
-FROM python:3.12-slim
+FROM python:3.7-slim
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
