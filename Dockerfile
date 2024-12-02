@@ -1,5 +1,4 @@
-ARG TARGETARCH=arm64
-FROM --platform=linux/${TARGETARCH} debian:bullseye-slim
+FROM debian:bullseye-slim
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
