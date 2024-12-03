@@ -1,8 +1,6 @@
 import os
 from obspy import read
 import pandas as pd
-import pyarrow as pa
-import pyarrow.parquet as pq
 import traceback
 
 def convert_file_to_parquet(input_file, output_file):
@@ -46,10 +44,22 @@ def convert_file_to_parquet(input_file, output_file):
             'data': [st[0].data]
         })
         
-        # Write to Parquet
-        table = pa.Table.from_pandas(df)
-        pq.write_table(table, output_file)
-        print(f"Successfully converted: {input_file} -> {output_file}")
+        # Check if the output file already exists
+        if os.path.exists(output_file):
+            # Read existing data
+            existing_df = pd.read_parquet(output_file)
+            
+            # Append new data to existing data
+            combined_df = pd.concat([existing_df, df], ignore_index=True)
+            
+            # Write combined data to Parquet
+            combined_df.to_parquet(output_file)
+            print(f"Successfully appended: {input_file} -> {output_file}")
+        else:
+            # Write new data to Parquet
+            df.to_parquet(output_file)
+            print(f"Successfully created: {input_file} -> {output_file}")
+    
     except Exception as e:
         print(f"Error converting {input_file}: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
@@ -62,7 +72,7 @@ output_dir = "/mnt/code/output"
 os.makedirs(output_dir, exist_ok=True)
 
 # Iterate over the directory structure
-for root, dirs, files in os.walk(input_dir):
+for root, dirs, files in os.walk(input_file):
     print(f"Searching for files in: {root}")
     for file in files:
         input_file = os.path.join(root, file)
