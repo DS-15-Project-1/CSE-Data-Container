@@ -82,3 +82,6 @@ for root, dirs, files in os.walk(input_dir):
         convert_file_to_parquet(input_file, output_file)
 
 print("Conversion complete!")
+
+if __name__ == "__main__":
+    pass
