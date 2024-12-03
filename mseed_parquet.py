@@ -15,7 +15,7 @@ def convert_file_to_parquet(input_file, output_file):
         print(f"Is file: {os.path.isfile(input_file)}")
         
         # Check file contents
-        for open(input_file, 'rb') in f:
+        if open(input_file, 'rb') in f:
             print(f"File size: {os.path.getsize(input_file)} bytes")
             print(f"First few bytes: {f.read(20)}")
         
