@@ -19,7 +19,7 @@ def convert_file_to_parquet(input_file, output_file):
             print(f"File size: {os.path.getsize(input_file)} bytes")
             print(f"First few bytes: {f.read(20)}")
         
-        # Read the file
+      # Read the file
         st = read(input_file)
         print(f"Successfully read: {input_file}")
         print(f"Number of traces: {len(st)}")
@@ -46,10 +46,10 @@ def convert_file_to_parquet(input_file, output_file):
             'data': [st[0].data]
         })
         
-                # Check if the output file already exists
+        # Check if the output file already exists
         if os.path.exists(output_file):
             # Read existing data
-            existing_table = pd.read_table(output_file)
+            existing_table = pq.read_table(output_file)
             existing_df = existing_table.to_pandas()
             
             # Append new data to existing data
@@ -64,14 +64,6 @@ def convert_file_to_parquet(input_file, output_file):
             table = pa.Table.from_pandas(df)
             pq.write_table(table, output_file)
             print(f"Successfully created: {input_file} -> {output_file}")
-    except Exception as e:
-        print(f"Error converting {input_file}: {str(e)}")
-        print(f"Traceback: {traceback.format_exc()}")
-        
-        # Write to Parquet
-        table = pa.Table.from_pandas(df)
-        pq.write_table(table, output_file)
-        print(f"Successfully converted: {input_file} -> {output_file}")
     except Exception as e:
         print(f"Error converting {input_file}: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
