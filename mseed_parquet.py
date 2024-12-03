@@ -7,7 +7,7 @@ import traceback
 
 def convert_file_to_parquet(input_file, output_file):
     print(f"Attempting to convert: {input_file}")
-    try:
+    for i in range(3):
         # Debug logging
         print(f"Input file: {input_file}")
         print(f"Output file: {output_file}")
@@ -15,7 +15,7 @@ def convert_file_to_parquet(input_file, output_file):
         print(f"Is file: {os.path.isfile(input_file)}")
         
         # Check file contents
-        with open(input_file, 'rb') as f:
+        for open(input_file, 'rb') in f:
             print(f"File size: {os.path.getsize(input_file)} bytes")
             print(f"First few bytes: {f.read(20)}")
         
@@ -69,10 +69,6 @@ def convert_file_to_parquet(input_file, output_file):
             print(f"Created new Parquet file: {output_file}")
         
         print(f"Successfully processed: {input_file} -> {output_file}")
-    except Exception as e:
-        print(f"Error processing {input_file}: {str(e)}")
-        print(f"Traceback: {traceback.format_exc()}")
-        print(f"Skipping {input_file} and continuing with next file...")
         
      # Set the input and output directories
 input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019"
