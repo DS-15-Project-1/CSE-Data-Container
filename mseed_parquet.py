@@ -71,7 +71,7 @@ output_dir = "/mnt/code/output"
 os.makedirs(output_dir, exist_ok=True)
 
 # Iterate over the directory structure
-for root, dirs, files in os.walk(input_file):
+for root, dirs, files in os.walk(input_dir):
     print(f"Searching for files in: {root}")
     for file in files:
         input_file = os.path.join(root, file)
