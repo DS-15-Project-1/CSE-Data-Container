@@ -86,10 +86,17 @@ def process_directory(directory_path, input_dir, output_dir):
     
     for rel_path, file in tqdm(dir_files, desc=f"Processing directory {directory_path}"):
         input_file = os.path.join(input_dir, rel_path, file)
+        
+        # Extract Julian day from the filename
+        try:
+            julian_day = int(os.path.splitext(file)[0].split('.')[-1])
+            logger.info(f"Extracted Julian day: {julian_day} for file: {file}")
+        except ValueError:
+            logger.warning(f"Could not extract Julian day from file: {file}. Using default value.")
+            julian_day = 0
+        
         # Create a unique output file name for each input file
         output_file = os.path.join(output_dir, rel_path, f"{os.path.splitext(file)[0]}_{julian_day}.parquet")
-        
-        julian_day = int(os.path.splitext(file)[0].split('.')[-1])
         
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
         
