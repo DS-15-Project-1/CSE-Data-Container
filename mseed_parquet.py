@@ -5,6 +5,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import traceback
 import gc
+from tqdm import tqdm
 
 def convert_file_to_parquet(input_file, output_file):
     print(f"Attempting to convert: {input_file}")
@@ -35,11 +36,11 @@ def convert_file_to_parquet(input_file, output_file):
         chunk_size = int(3600 * sampling_rate)  # 1 hour of data, rounded to nearest integer
         
         # Read data in chunks
-        for i in range(0, int(len(st[0])), chunk_size):
+        for i in tqdm(range(0, int(len(st[0])), chunk_size), desc=f"Processing {input_file}"):
             chunk = st.slice(starttime=st[0].stats.starttime + i / sampling_rate,
                              endtime=st[0].stats.starttime + (i + chunk_size) / sampling_rate)
             
-        # Create DataFrame
+            # Create DataFrame
             df = pd.DataFrame({
                 'network': [network],
                 'station': [station],
@@ -64,11 +65,9 @@ def convert_file_to_parquet(input_file, output_file):
                 
                 # Write combined table to Parquet
                 pq.write_table(combined_table, output_file)
-                print(f"Appended data to existing Parquet file: {output_file}")
             else:
                 # Write new table to Parquet
                 pq.write_table(table, output_file)
-                print(f"Created new Parquet file: {output_file}")
             
             del df, table, chunk
             gc.collect()
@@ -78,18 +77,21 @@ def convert_file_to_parquet(input_file, output_file):
         print(f"Error processing {input_file}: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
         print(f"Skipping {input_file} and continuing with next file...")
-        
-     # Set the input and output directories
+
+# Set the input and output directories
 input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019"
 output_dir = "/mnt/code/output"
 
 # Create the output directory if it doesn't exist
 os.makedirs(output_dir, exist_ok=True)
 
+# Get total number of files
+total_files = sum(len(files) for _, _, files in os.walk(input_dir))
+
 # Iterate over the directory structure
 for root, dirs, files in os.walk(input_dir):
     print(f"Searching for files in: {root}")
-    for file in files:
+    for file in tqdm(files, desc="Overall Progress", total=total_files):
         input_file = os.path.join(root, file)
         rel_path = os.path.relpath(input_file, input_dir)
         output_file = os.path.join(output_dir, rel_path).replace(os.path.splitext(file)[1], ".parquet")

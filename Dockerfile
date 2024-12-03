@@ -14,7 +14,8 @@ RUN python -m pip install --upgrade pip wheel setuptools
 RUN pip install --no-cache-dir \
     obspy \
     pandas \
-    pyarrow
+    pyarrow \
+    tqdm
 
 # Copy the conversion script
 COPY mseed_parquet.py /app/mseed_parquet.py
