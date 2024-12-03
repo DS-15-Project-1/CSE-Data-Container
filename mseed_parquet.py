@@ -9,10 +9,18 @@ from tqdm import tqdm
 import time
 import logging
 import sys
+import signal
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+def signal_handler(sig, frame):
+    logger.warning(f"Received signal {sig}. Attempting to clean up...")
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
 
 def convert_file_to_parquet(input_file, output_file):
     logger.info(f"Attempting to convert: {input_file}")
@@ -126,14 +134,14 @@ if __name__ == "__main__":
         logger.info(f"Contents of /mnt/data: {os.listdir('/mnt/data')}")
         logger.info(f"Contents of /mnt/data/SWP_Seismic_Database_Current: {os.listdir('/mnt/data/SWP_Seismic_Database_Current')}")
 
-        input_dir = "/mnt/data/SWP_Seismic_Database_Current"
+        input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ/FWU1/"
         output_dir = "/mnt/code/output"
 
         logger.info(f"Input directory: {input_dir}")
         logger.info(f"Output directory: {output_dir}")
 
         if not os.path.exists(input_dir):
-            logger.error(f"Input directory does not exist: {input_file}")
+            logger.error(f"Input directory does not exist: {input_dir}")
             logger.info(f"Contents of /mnt: {os.listdir('/mnt')}")
             logger.info(f"Contents of /mnt/data: {os.listdir('/mnt/data')}")
             sys.exit(1)
