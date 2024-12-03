@@ -15,6 +15,17 @@ import signal
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+def signal_handler(sig, frame):
+    if sig == signal.SIGILL:
+        logger.error("Received SIGILL. This might indicate a compatibility issue.")
+    else:
+        logger.warning(f"Received signal {sig}. Attempting to clean up...")
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
+signal.signal(signal.SIGILL, signal_handler)
+
 def convert_file_to_parquet(input_file, output_file):
     logger.info(f"Attempting to convert: {input_file}")
     
@@ -93,6 +104,7 @@ def convert_file_to_parquet(input_file, output_file):
         logger.error(f"Traceback: {traceback.format_exc()}")
         logger.warning(f"Skipping {input_file} and continuing with next file...")
         return False
+    
 def process_directory(directory_path, input_dir, output_dir):
     batch_start_time = time.time()
     
