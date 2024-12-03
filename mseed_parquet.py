@@ -55,8 +55,11 @@ def convert_file_to_parquet(input_file, output_file):
         # Calculate chunk size
         chunk_size = int(3600 * sampling_rate)  # 1 hour of data, rounded to nearest integer
         
+        total_chunks = len(st[0]) // chunk_size + 1
+        logger.info(f"Total chunks to process: {total_chunks}")
+        
         # Read data in chunks
-        for i in tqdm(range(0, len(st[0]), chunk_size), desc=f"Processing {input_file}"):
+        for i in tqdm(range(0, len(st[0]), chunk_size), desc=f"Processing {input_file}", total=total_chunks):
             try:
                 chunk = st.slice(starttime=st[0].stats.starttime + i / sampling_rate,
                                  endtime=st[0].stats.starttime + (i + chunk_size) / sampling_rate)
@@ -91,6 +94,9 @@ def convert_file_to_parquet(input_file, output_file):
                 
                 del df, table, chunk
                 gc.collect()
+                
+                logger.info(f"Processed chunk {i // chunk_size + 1}/{total_chunks}")
+            
             except Exception as e:
                 logger.error(f"Error processing chunk {i} of {input_file}: {str(e)}")
                 logger.error(f"Traceback: {traceback.format_exc()}")
