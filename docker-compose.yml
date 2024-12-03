@@ -5,9 +5,10 @@ services:
     build: .
     container_name: "miniseed-to-parquet-converter"
     volumes:
-      - /mnt:/mnt
-      - /mnt/code/output:/mnt/code/output
+      - input_data:/mnt
+      - output_data:/mnt/code/output
     command: python /app/mseed_parquet.py
+
 volumes:
   input_data:
     driver: local
