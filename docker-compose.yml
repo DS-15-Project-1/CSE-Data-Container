@@ -11,4 +11,4 @@ services:
       resources:
         limits:
           cpus: '3'
-          memory: 12G
+          memory: 16G
