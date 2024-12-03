@@ -4,14 +4,23 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 import traceback
+import gc
 
 def convert_file_to_parquet(input_file, output_file):
     print(f"Attempting to convert: {input_file}")
     
     try:
+        # Get file size
+        file_size = os.path.getsize(input_file)
+        print(f"File size: {file_size} bytes")
+        
+        if file_size > 1024 * 1024 * 1024:  # 1 GB limit
+            print(f"File too large ({file_size} bytes), skipping: {input_file}")
+            return
+        
         # Read the file
-        st = read(input_file)
-        print(f"Successfully read: {input_file}")
+        st = read(input_file, headonly=True)
+        print(f"Successfully read header of: {input_file}")
         
         # Extract metadata
         network = st[0].stats.network
@@ -22,42 +31,52 @@ def convert_file_to_parquet(input_file, output_file):
         end_time = st[0].stats.endtime.isoformat()
         sampling_rate = st[0].stats.sampling_rate
         
-        # Create DataFrame
-        df = pd.DataFrame({
-            'network': [network],
-            'station': [station],
-            'location': [location],
-            'channel': [channel],
-            'starttime': [start_time],
-            'endtime': [end_time],
-            'sampling_rate': [sampling_rate],
-            'data': [st[0].data]
-        })
-        
-        # Convert DataFrame to PyArrow Table
-        table = pa.Table.from_pandas(df)
-        
-        # Check if output file exists
-        if os.path.exists(output_file):
-            # Read existing Parquet file
-            existing_table = pq.read_table(output_file)
+        # Read data in chunks
+        chunk_size = 3600 * sampling_rate  # 1 hour of data
+        for i in range(0, len(st[0]), chunk_size):
+            chunk = st.slice(starttime=st[0].stats.starttime + i / sampling_rate,
+                             endtime=st[0].stats.starttime + (i + chunk_size) / sampling_rate)
             
-            # Append new data to existing table
-            combined_table = pa.concat_tables([existing_table, table])
+            # Create DataFrame
+            df = pd.DataFrame({
+                'network': [network],
+                'station': [station],
+                'location': [location],
+                'channel': [channel],
+                'starttime': [chunk.stats.starttime.isoformat()],
+                'endtime': [chunk.stats.endtime.isoformat()],
+                'sampling_rate': [sampling_rate],
+                'data': [chunk.data]
+            })
             
-            # Write combined table to Parquet
-            pq.write_table(combined_table, output_file)
-            print(f"Appended data to existing Parquet file: {output_file}")
-        else:
-            # Write new table to Parquet
-            pq.write_table(table, output_file)
-            print(f"Created new Parquet file: {output_file}")
+            # Convert DataFrame to PyArrow Table
+            table = pa.Table.from_pandas(df)
+            
+            # Check if output file exists
+            if os.path.exists(output_file):
+                # Read existing Parquet file
+                existing_table = pq.read_table(output_file)
+                
+                # Append new data to existing table
+                combined_table = pa.concat_tables([existing_table, table])
+                
+                # Write combined table to Parquet
+                pq.write_table(combined_table, output_file)
+                print(f"Appended data to existing Parquet file: {output_file}")
+            else:
+                # Write new table to Parquet
+                pq.write_table(table, output_file)
+                print(f"Created new Parquet file: {output_file}")
+            
+            del df, table, chunk
+            gc.collect()
         
         print(f"Successfully processed: {input_file} -> {output_file}")
     except Exception as e:
         print(f"Error processing {input_file}: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
         print(f"Skipping {input_file} and continuing with next file...")
+
 
         
      # Set the input and output directories
