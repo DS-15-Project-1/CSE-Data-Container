@@ -69,21 +69,4 @@ def convert_file_to_parquet(input_file, output_file):
 input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019"
 output_dir = "/mnt/code/output"
 
-# Create the output directory if it doesn't exist
-os.makedirs(output_dir, exist_ok=True)
-
-# Iterate over the directory structure
-for root, dirs, files in os.walk(input_dir):
-    print(f"Searching for files in: {root}")
-    for file in files:
-        input_file = os.path.join(root, file)
-        rel_path = os.path.relpath(input_file, input_dir)
-        output_file = os.path.join(output_dir, rel_path).replace(os.path.splitext(file)[1], ".parquet")
-        
-        # Create the output directory if it doesn't exist
-        os.makedirs(os.path.dirname(output_file), exist_ok=True)
-        
-        # Convert the file
-        convert_file_to_parquet(input_file, output_file)
-
 print("Conversion complete!")
