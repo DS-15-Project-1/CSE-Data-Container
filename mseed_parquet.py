@@ -98,7 +98,7 @@ def process_directory(directory_path, input_dir, output_dir):
     successful_conversions = 0
     failed_conversions = 0
     
-    for file in dir_files:
+    for file in tqdm(dir_files, desc=f"Processing directory {directory_path}"):
         input_file = os.path.join(input_dir, file)
         output_file = os.path.join(output_dir, file).replace(os.path.splitext(file)[1], ".parquet")
         
@@ -133,7 +133,7 @@ if __name__ == "__main__":
         logger.info(f"Output directory: {output_dir}")
 
         if not os.path.exists(input_dir):
-            logger.error(f"Input directory does not exist: {input_dir}")
+            logger.error(f"Input directory does not exist: {input_file}")
             logger.info(f"Contents of /mnt: {os.listdir('/mnt')}")
             logger.info(f"Contents of /mnt/data: {os.listdir('/mnt/data')}")
             sys.exit(1)
