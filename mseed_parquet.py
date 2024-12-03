@@ -1,6 +1,8 @@
 import os
 from obspy import read
 import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
 import traceback
 
 def convert_file_to_parquet(input_file, output_file):
@@ -53,18 +55,20 @@ def convert_file_to_parquet(input_file, output_file):
             combined_df = pd.concat([existing_df, df], ignore_index=True)
             
             # Write combined data to Parquet
-            combined_df.to_parquet(output_file, index=False)
+            table = pa.Table.from_pandas(combined_df)
+            pq.write_table(table, output_file)
             print(f"Successfully appended: {input_file} -> {output_file}")
         else:
             # Write new data to Parquet
-            df.to_parquet(output_file, index=False)
+            table = pa.Table.from_pandas(df)
+            pq.write_table(table, output_file)
             print(f"Successfully created: {input_file} -> {output_file}")
     except Exception as e:
         print(f"Error converting {input_file}: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
 
 # Set the input and output directories
-input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019"
+input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ"
 output_dir = "/mnt/code/output"
 
 # Create the output directory if it doesn't exist
