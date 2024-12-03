@@ -76,17 +76,17 @@ def process_directory(directory_path, input_dir, output_dir):
     for root, _, files in os.walk(os.path.join(input_dir, directory_path)):
         for file in files:
             rel_path = os.path.relpath(root, input_dir)
-            dir_files.append(os.path.join(rel_path, file))
+            dir_files.append((rel_path, file))
     
     logger.info(f"Processing directory: {directory_path} with {len(dir_files)} files")
     
     successful_conversions = 0
     failed_conversions = 0
     
-    for file in tqdm(dir_files, desc=f"Processing directory {directory_path}"):
-        input_file = os.path.join(input_dir, file)
+    for rel_path, file in tqdm(dir_files, desc=f"Processing directory {directory_path}"):
+        input_file = os.path.join(input_dir, rel_path, file)
         # Create a unique output file name for each input file
-        output_file = os.path.join(output_dir, directory_path, f"{os.path.splitext(file)[0]}.parquet")
+        output_file = os.path.join(output_dir, rel_path, f"{os.path.splitext(file)[0]}_{os.path.basename(rel_path)}.parquet")
         
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
         
@@ -105,8 +105,10 @@ def process_directory(directory_path, input_dir, output_dir):
     batch_duration = batch_end_time - batch_start_time
     logger.info(f"Directory {directory_path} processed in {batch_duration:.2f} seconds")
     logger.info(f"Successful conversions: {successful_conversions}, Failed conversions: {failed_conversions}")
+
 if __name__ == "__main__":
     try:
+        
         logger.info(f"Contents of /mnt: {os.listdir('/mnt')}")
         logger.info(f"Contents of /mnt/data: {os.listdir('/mnt/data')}")
         logger.info(f"Contents of /mnt/data/SWP_Seismic_Database_Current: {os.listdir('/mnt/data/SWP_Seismic_Database_Current')}")
@@ -124,6 +126,7 @@ if __name__ == "__main__":
             sys.exit(1)
 
         # Find the correct subdirectory
+      
         subdirectories = [name for name in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir, name))]
         logger.info(f"Subdirectories found: {subdirectories}")
 
@@ -133,7 +136,7 @@ if __name__ == "__main__":
             process_directory("", input_dir, output_dir)
         else:
             # Process each subdirectory
-            for subdir in subdirectories:
+            for subdir in tqdm(subdirectories, desc="Processing subdirectories"):
                 process_directory(subdir, input_dir, output_dir)
 
         logger.info(f"Contents of input directory: {os.listdir(input_dir)}")
