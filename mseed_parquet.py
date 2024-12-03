@@ -16,7 +16,7 @@ import signal
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-def convert_file_to_parquet(input_file, output_file):
+def convert_file_to_parquet(input_file):
     logger.info(f"Attempting to convert: {input_file}")
     
     try:
@@ -26,7 +26,7 @@ def convert_file_to_parquet(input_file, output_file):
         
         if file_size > 1024 * 1024 * 1024:  # 1 GB limit
             logger.warning(f"File too large ({file_size} bytes), skipping: {input_file}")
-            return False
+            return None
         
         # Read the file
         logger.info(f"Starting to read file: {input_file}")
@@ -58,17 +58,14 @@ def convert_file_to_parquet(input_file, output_file):
         logger.info(f"Converting DataFrame to PyArrow Table")
         table = pa.Table.from_pandas(df)
         
-        logger.info(f"Writing table to Parquet")
-        pq.write_table(table, output_file)
-        
-        logger.info(f"Successfully processed: {input_file} -> {output_file}")
-        return True
+        logger.info(f"Successfully processed: {input_file}")
+        return table
     
     except Exception as e:
         logger.error(f"Error processing {input_file}: {str(e)}")
         logger.error(f"Traceback: {traceback.format_exc()}")
         logger.warning(f"Skipping {input_file} and continuing with next file...")
-        return False
+        return None
 
 def process_directory(directory_path, input_dir, output_dir):
     batch_start_time = time.time()
@@ -83,26 +80,19 @@ def process_directory(directory_path, input_dir, output_dir):
     
     successful_conversions = 0
     failed_conversions = 0
-        
+    
+    output_file = os.path.join(output_dir, directory_path, f"{directory_path}.parquet")
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    
+    tables = []
+    
     for rel_path, file in tqdm(dir_files, desc=f"Processing directory {directory_path}"):
         input_file = os.path.join(input_dir, rel_path, file)
         
-        # Extract Julian day from the filename
-        try:
-            julian_day = int(os.path.splitext(file)[0].split('.')[-1])
-            logger.info(f"Extracted Julian day: {julian_day} for file: {file}")
-        except ValueError:
-            logger.warning(f"Could not extract Julian day from file: {file}. Using default value.")
-            julian_day = 0
+        table = convert_file_to_parquet(input_file)
         
-        # Create a unique output file name for each input file
-        output_file = os.path.join(output_dir, rel_path, f"{os.path.splitext(file)[0]}_{julian_day}.parquet")
-        
-        os.makedirs(os.path.dirname(output_file), exist_ok=True)
-        
-        success = convert_file_to_parquet(input_file, output_file)
-        
-        if success:
+        if table is not None:
+            tables.append(table)
             successful_conversions += 1
         else:
             failed_conversions += 1
@@ -111,14 +101,18 @@ def process_directory(directory_path, input_dir, output_dir):
             logger.critical(f"More than half of the files in {directory_path} failed conversion. Stopping.")
             return
     
+    if tables:
+        combined_table = pa.concat_tables(tables)
+        pq.write_table(combined_table, output_file)
+        logger.info(f"Successfully wrote combined data to: {output_file}")
+    
     batch_end_time = time.time()
     batch_duration = batch_end_time - batch_start_time
     logger.info(f"Directory {directory_path} processed in {batch_duration:.2f} seconds")
     logger.info(f"Successful conversions: {successful_conversions}, Failed conversions: {failed_conversions}")
-if __name__ == "__main__":
     
+if __name__ == "__main__":
     try:
-
         logger.info(f"Contents of /mnt: {os.listdir('/mnt')}")
         logger.info(f"Contents of /mnt/data: {os.listdir('/mnt/data')}")
         logger.info(f"Contents of /mnt/data/SWP_Seismic_Database_Current: {os.listdir('/mnt/data/SWP_Seismic_Database_Current')}")
@@ -135,8 +129,6 @@ if __name__ == "__main__":
             logger.info(f"Contents of /mnt/data: {os.listdir('/mnt/data')}")
             sys.exit(1)
 
-        # Find the correct subdirectory
-
         subdirectories = [name for name in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir, name))]
         logger.info(f"Subdirectories found: {subdirectories}")
 
@@ -145,16 +137,14 @@ if __name__ == "__main__":
             logger.info("Attempting to process files directly in the input directory")
             process_directory("", input_dir, output_dir)
         else:
-            # Process each subdirectory
             for subdir in tqdm(subdirectories, desc="Processing subdirectories"):
                 process_directory(subdir, input_dir, output_dir)
 
         logger.info(f"Contents of input directory: {os.listdir(input_dir)}")
         logger.info("Conversion complete!")
+        logger.info(f"Contents of output directory: {os.listdir('/mnt/code/output')}")
     except Exception as e:
         logger.error(f"An unexpected error occurred: {str(e)}")
         logger.error(f"Traceback: {traceback.format_exc()}")
-        logger.info(f"Contents of output directory: {os.listdir('/mnt/code/output/HHZ.D')}")
         sys.exit(1)
-        
         
