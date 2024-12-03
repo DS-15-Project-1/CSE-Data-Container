@@ -30,10 +30,10 @@ def convert_file_to_parquet(input_file, output_file):
         station = st[0].stats.station
         location = st[0].stats.location
         channel = st[0].stats.channel
-        start_time = st[0].stats.starttime
-        end_time = st[0].stats.endtime
+        start_time = st[0].stats.starttime.isoformat()
+        end_time = st[0].stats.endtime.isoformat()
         sampling_rate = st[0].stats.sampling_rate
-        
+
         # Create DataFrame
         df = pd.DataFrame({
             'network': [network],
@@ -82,6 +82,3 @@ for root, dirs, files in os.walk(input_dir):
         convert_file_to_parquet(input_file, output_file)
 
 print("Conversion complete!")
-
-if __name__ == "__main__":
-    pass
