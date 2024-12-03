@@ -30,10 +30,10 @@ def convert_file_to_parquet(input_file, output_file):
         station = st[0].stats.station
         location = st[0].stats.location
         channel = st[0].stats.channel
-        start_time = st[0].stats.starttime.isoformat()
-        end_time = st[0].stats.endtime.isoformat()
+        start_time = st[0].stats.starttime
+        end_time = st[0].stats.endtime
         sampling_rate = st[0].stats.sampling_rate
-
+        
         # Create DataFrame
         df = pd.DataFrame({
             'network': [network],
@@ -45,28 +45,6 @@ def convert_file_to_parquet(input_file, output_file):
             'sampling_rate': [sampling_rate],
             'data': [st[0].data]
         })
-        
-                # Check if the output file already exists
-        if os.path.exists(output_file):
-            # Read existing data
-            existing_table = pd.read_parquet(output_file)
-            existing_df = existing_table.to_pandas()
-            
-            # Append new data to existing data
-            combined_df = pd.concat([existing_df, df], ignore_index=True)
-            
-            # Write combined data to Parquet
-            table = pa.Table.from_pandas(combined_df)
-            pq.write_table(table, output_file)
-            print(f"Successfully appended: {input_file} -> {output_file}")
-        else:
-            # Write new data to Parquet
-            table = pa.Table.from_pandas(df)
-            pq.write_table(table, output_file)
-            print(f"Successfully created: {input_file} -> {output_file}")
-    except Exception as e:
-        print(f"Error converting {input_file}: {str(e)}")
-        print(f"Traceback: {traceback.format_exc()}")
         
         # Write to Parquet
         table = pa.Table.from_pandas(df)
@@ -88,14 +66,8 @@ for root, dirs, files in os.walk(input_dir):
     print(f"Searching for files in: {root}")
     for file in files:
         input_file = os.path.join(root, file)
-        # Get the relative path within the input directory
         rel_path = os.path.relpath(input_file, input_dir)
-        
-        # Construct the output file path
-        output_file = os.path.join(output_dir, rel_path)
-        
-        # Change the file extension to .parquet
-        output_file = os.path.splitext(output_file)[0] + '.parquet'
+        output_file = os.path.join(output_dir, rel_path).replace(os.path.splitext(file)[1], ".parquet")
         
         # Create the output directory if it doesn't exist
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
