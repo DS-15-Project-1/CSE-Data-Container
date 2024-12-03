@@ -7,8 +7,8 @@ import traceback
 
 def convert_file_to_parquet(input_file, output_file):
     print(f"Attempting to convert: {input_file}")
-    for f in open(input_file, 'rb'):
-        
+    
+    try:
         # Read the file
         st = read(input_file)
         print(f"Successfully read: {input_file}")
@@ -39,18 +39,26 @@ def convert_file_to_parquet(input_file, output_file):
         
         # Check if output file exists
         if os.path.exists(output_file):
-                # Read existing Parquet file
-                existing_table = pq.read_table(output_file)
-                
-                # Append new data to existing tablce
-                combined_table = pa.concat_tables([existing_table, table])
-                
-                # Write combined table to Parquet
-                pq.write_table(combined_table, output_file)
+            # Read existing Parquet file
+            existing_table = pq.read_table(output_file)
+            
+            # Append new data to existing table
+            combined_table = pa.concat_tables([existing_table, table])
+            
+            # Write combined table to Parquet
+            pq.write_table(combined_table, output_file)
+            print(f"Appended data to existing Parquet file: {output_file}")
         else:
             # Write new table to Parquet
             pq.write_table(table, output_file)
+            print(f"Created new Parquet file: {output_file}")
+        
         print(f"Successfully processed: {input_file} -> {output_file}")
+    except Exception as e:
+        print(f"Error processing {input_file}: {str(e)}")
+        print(f"Traceback: {traceback.format_exc()}")
+        print(f"Skipping {input_file} and continuing with next file...")
+
         
      # Set the input and output directories
 input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019"
