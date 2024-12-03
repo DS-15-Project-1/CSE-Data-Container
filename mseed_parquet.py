@@ -63,6 +63,14 @@ def convert_file_to_parquet(input_file, output_file):
     except Exception as e:
         print(f"Error converting {input_file}: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
+        
+        # Write to Parquet
+        table = pd.Table.from_pandas(df)
+        pd.write_table(table, output_file)
+        print(f"Successfully converted: {input_file} -> {output_file}")
+    except Exception as e:
+        print(f"Error converting {input_file}: {str(e)}")
+        print(f"Traceback: {traceback.format_exc()}")
 
 # Set the input and output directories
 input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019"
