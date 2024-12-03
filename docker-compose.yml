@@ -7,8 +7,3 @@ services:
       - /mnt/:/mnt/
       - /mnt/code/output:/mnt/code/output
     command: python /app/mseed_parquet.py
-    deploy:
-      resources:
-        limits:
-          cpus: '4'
-          memory: 1G
