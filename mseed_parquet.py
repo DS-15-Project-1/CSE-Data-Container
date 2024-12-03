@@ -47,7 +47,11 @@ def convert_file_to_parquet(input_file, output_file):
         })
         
                 # Check if the output file already exists
-        if os.path.exists(output_file):            
+        if os.path.exists(output_file):
+            # Read existing data
+            existing_table = pd.read_table(output_file)
+            existing_df = existing_table.to_pandas()
+            
             # Append new data to existing data
             combined_df = pd.concat([existing_df, df], ignore_index=True)
             
