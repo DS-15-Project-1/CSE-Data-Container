@@ -86,14 +86,21 @@ def convert_file_to_parquet(input_file, output_file):
         logger.warning(f"Skipping {input_file} and continuing with next file...")
         return False
 
-def process_batch(batch_files, input_dir, output_dir):
+def process_directory(directory_path, input_dir, output_dir):
     batch_start_time = time.time()
-    logger.info(f"Processing batch of {len(batch_files)} files")
     
-    for file in batch_files:
+    # Get all files in the directory
+    dir_files = []
+    for root, _, files in os.walk(os.path.join(input_dir, directory_path)):
+        for file in files:
+            rel_path = os.path.relpath(root, input_dir)
+            dir_files.append(os.path.join(rel_path, file))
+    
+    logger.info(f"Processing directory: {directory_path} with {len(dir_files)} files")
+    
+    for file in dir_files:
         input_file = os.path.join(input_dir, file)
-        rel_path = os.path.relpath(input_file, input_dir)
-        output_file = os.path.join(output_dir, rel_path).replace(os.path.splitext(file)[1], ".parquet")
+        output_file = os.path.join(output_dir, file).replace(os.path.splitext(file)[1], ".parquet")
         
         # Create the output directory if it doesn't exist
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
@@ -106,7 +113,7 @@ def process_batch(batch_files, input_dir, output_dir):
     
     batch_end_time = time.time()
     batch_duration = batch_end_time - batch_start_time
-    logger.info(f"Batch processing completed in {batch_duration:.2f} seconds")
+    logger.info(f"Directory {directory_path} processed in {batch_duration:.2f} seconds")
 
 # Set the input and output directories
 input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019"
@@ -115,21 +122,11 @@ output_dir = "/mnt/code/output"
 # Create the output directory if it doesn't exist
 os.makedirs(output_dir, exist_ok=True)
 
-# Get total number of files
-total_files = sum(len(files) for _, _, files in os.walk(input_dir))
+# Get all subdirectories in the input directory
+subdirectories = [name for name in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir, name))]
 
-# Set batch size
-batch_size = 100
-
-# Get all files
-all_files = []
-for root, _, files in os.walk(input_dir):
-    for file in files:
-        all_files.append(os.path.relpath(os.path.join(root, file), input_dir))
-
-# Process files in batches
-for i in range(0, len(all_files), batch_size):
-    batch_files = all_files[i:i+batch_size]
-    process_batch(batch_files, input_dir, output_dir)
+# Process each subdirectory
+for subdir in subdirectories:
+    process_directory(subdir, input_dir, output_dir)
 
 logger.info("Conversion complete!")
