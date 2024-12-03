@@ -87,12 +87,13 @@ def process_directory(directory_path, input_dir, output_dir):
     for rel_path, file in tqdm(dir_files, desc=f"Processing directory {directory_path}"):
         input_file = os.path.join(input_dir, rel_path, file)
         # Create a unique output file name for each input file
-        output_file = os.path.join(output_dir, rel_path, f"{os.path.splitext(file)[0]}.parquet")
+        output_file = os.path.join(output_dir, rel_path, f"{os.path.splitext(file)[0]}_{julian_day}.parquet")
+        
+        julian_day = int(os.path.splitext(file)[0].split('.')[-1])
         
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
         
         success = convert_file_to_parquet(input_file, output_file)
-        
         
         if success:
             successful_conversions += 1
