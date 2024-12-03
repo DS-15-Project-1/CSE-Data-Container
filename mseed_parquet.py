@@ -85,7 +85,6 @@ def process_directory(directory_path, input_dir, output_dir):
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     
     tables = []
-    
     for rel_path, file in tqdm(dir_files, desc=f"Processing directory {directory_path}"):
         input_file = os.path.join(input_dir, rel_path, file)
         
@@ -94,12 +93,21 @@ def process_directory(directory_path, input_dir, output_dir):
         if table is not None:
             tables.append(table)
             successful_conversions += 1
+            
+            # Write partial results every 10 successful conversions
+            if successful_conversions % 10 == 0:
+                partial_output_file = os.path.join(output_dir, directory_path, f"{directory_path}_partial_{successful_conversions}.parquet")
+                partial_combined_table = pa.concat_tables(tables)
+                pq.write_table(partial_combined_table, partial_output_file)
+                logger.info(f"Wrote partial results to: {partial_output_file}")
+            
         else:
             failed_conversions += 1
         
         if failed_conversions > len(dir_files) // 2:
             logger.critical(f"More than half of the files in {directory_path} failed conversion. Stopping.")
             return
+    
     
     if tables:
         combined_table = pa.concat_tables(tables)
