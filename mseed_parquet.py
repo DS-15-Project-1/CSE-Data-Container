@@ -38,6 +38,9 @@ def convert_file_to_parquet(input_file, output_file):
         st = read(input_file, headonly=False)
         logger.info(f"Successfully read: {input_file}")
         
+        # Log additional information about the stream
+        logger.info(f"Stream info: {st}")
+        
         # Extract metadata
         network = st[0].stats.network
         station = st[0].stats.station
@@ -86,12 +89,13 @@ def convert_file_to_parquet(input_file, output_file):
         
         logger.info(f"Successfully processed: {input_file} -> {output_file}")
         return True
+    
     except Exception as e:
         logger.error(f"Error processing {input_file}: {str(e)}")
         logger.error(f"Traceback: {traceback.format_exc()}")
         logger.warning(f"Skipping {input_file} and continuing with next file...")
         return False
-
+    
 def process_directory(directory_path, input_dir, output_dir):
     batch_start_time = time.time()
     
