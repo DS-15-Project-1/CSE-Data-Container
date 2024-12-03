@@ -9,12 +9,22 @@ from tqdm import tqdm
 import time
 import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019"
+output_dir = "/mnt/code/output"
 
-logger.info("Starting mseed_parquet.py")
-logger.info(f"Current working directory: {os.getcwd()}")
-logger.info(f"Contents of current directory: {os.listdir('.')}")
+logger.info(f"Input directory: {input_dir}")
+logger.info(f"Output directory: {output_dir}")
+
+if not os.path.exists(input_dir):
+    logger.error(f"Input directory does not exist: {input_dir}")
+    logger.info(f"Contents of /mnt: {os.listdir('/mnt')}")
+    sys.exit(1)
+
+if not os.path.exists(output_dir):
+    logger.warning(f"Output directory does not exist, creating it: {output_dir}")
+    os.makedirs(output_dir, exist_ok=True)
+
+logger.info(f"Contents of input directory: {os.listdir(input_dir)}")
 
 def convert_file_to_parquet(input_file, output_file):
     logger.info(f"Attempting to convert: {input_file}")
