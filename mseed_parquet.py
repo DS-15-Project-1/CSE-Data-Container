@@ -30,10 +30,9 @@ def convert_file_to_parquet(input_file, output_file):
         station = st[0].stats.station
         location = st[0].stats.location
         channel = st[0].stats.channel
-        start_time = st[0].stats.starttime
-        end_time = st[0].stats.endtime
+        start_time = st[0].stats.starttime.isoformat()
+        end_time = st[0].stats.endtime.isoformat()
         sampling_rate = st[0].stats.sampling_rate
-        num_samples = len(st[0].data)
 
         # Create DataFrame
         df = pd.DataFrame({
@@ -41,17 +40,17 @@ def convert_file_to_parquet(input_file, output_file):
             'station': [station],
             'location': [location],
             'channel': [channel],
-            'starttime': [start_time.isoformat()],
-            'endtime': [end_time.isoformat()],
+            'starttime': [start_time],
+            'endtime': [end_time],
             'sampling_rate': [sampling_rate],
-            'num_samples': [num_samples],
             'data': [st[0].data]
         })
         
-        # Check if the output file already exists
+                # Check if the output file already exists
         if os.path.exists(output_file):
             # Read existing data
-            existing_df = pd.read_parquet(output_file)
+            existing_table = pd.read_table(output_file)
+            existing_df = existing_table.to_pandas()
             
             # Append new data to existing data
             combined_df = pd.concat([existing_df, df], ignore_index=True)
@@ -68,9 +67,17 @@ def convert_file_to_parquet(input_file, output_file):
     except Exception as e:
         print(f"Error converting {input_file}: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
+        
+        # Write to Parquet
+        table = pa.Table.from_pandas(df)
+        pq.write_table(table, output_file)
+        print(f"Successfully converted: {input_file} -> {output_file}")
+    except Exception as e:
+        print(f"Error converting {input_file}: {str(e)}")
+        print(f"Traceback: {traceback.format_exc()}")
 
 # Set the input and output directories
-input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ"
+input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019"
 output_dir = "/mnt/code/output"
 
 # Create the output directory if it doesn't exist
