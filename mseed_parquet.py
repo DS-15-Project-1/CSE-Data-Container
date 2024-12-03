@@ -58,7 +58,7 @@ def convert_file_to_parquet(input_file, output_file):
                 # Read existing Parquet file
                 existing_table = pq.read_table(output_file)
                 
-                # Append new data to existing table
+                # Append new data to existing tablce
                 combined_table = pa.concat_tables([existing_table, table])
                 
                 # Write combined table to Parquet
@@ -79,8 +79,15 @@ def convert_file_to_parquet(input_file, output_file):
         print(f"Error processing {input_file}: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
         print(f"Skipping {input_file} and continuing with next file...")
+        
+     # Set the input and output directories
+input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019"
+output_dir = "/mnt/code/output"
 
-# In the main loop:
+# Create the output directory if it doesn't exist
+os.makedirs(output_dir, exist_ok=True)
+
+# Iterate over the directory structure
 for root, dirs, files in os.walk(input_dir):
     print(f"Searching for files in: {root}")
     for file in files:
