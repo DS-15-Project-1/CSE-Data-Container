@@ -14,7 +14,7 @@ import sys
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019"
+input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ/FWU1/"
 output_dir = "/mnt/code/output"
 
 logger.info(f"Input directory: {input_dir}")
