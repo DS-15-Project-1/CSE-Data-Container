@@ -1,6 +1,8 @@
 import os
 from obspy import read
 import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
 import traceback
 
 def convert_file_to_parquet(input_file, output_file):
@@ -46,15 +48,21 @@ def convert_file_to_parquet(input_file, output_file):
         
         # Check if the output file already exists
         if os.path.exists(output_file):
-            # Read existing data
-            existing_df = pd.read_parquet(output_file)
-            
-            # Append new data to existing data
-            combined_df = pd.concat([existing_df, df], ignore_index=True)
-            
-            # Write combined data to Parquet
-            combined_df.to_parquet(output_file)
-            print(f"Successfully appended: {input_file} -> {output_file}")
+            try:
+                # Read existing data
+                existing_df = pd.read_parquet(output_file)
+                
+                # Append new data to existing data
+                combined_df = pd.concat([existing_df, df], ignore_index=True)
+                
+                # Write combined data to Parquet
+                combined_df.to_parquet(output_file)
+                print(f"Successfully appended: {input_file} -> {output_file}")
+            except Exception as e:
+                print(f"Error reading existing Parquet file: {e}")
+                print("Creating a new Parquet file instead.")
+                df.to_parquet(output_file)
+                print(f"Successfully created: {input_file} -> {output_file}")
         else:
             # Write new data to Parquet
             df.to_parquet(output_file)
