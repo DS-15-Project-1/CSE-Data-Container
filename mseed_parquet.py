@@ -46,33 +46,28 @@ def convert_file_to_parquet(input_file, output_file):
             'data': [st[0].data]
         })
         
-        # Check if the output file already exists
+        # Convert DataFrame to PyArrow Table
+        table = pa.Table.from_pandas(df)
+        
+        # Check if output file exists
         if os.path.exists(output_file):
-            try:
-                # Read existing data
-                existing_df = pd.read_parquet(output_file)
-                
-                # Append new data to existing data
-                combined_df = pd.concat([existing_df, df], ignore_index=True)
-                
-                # Convert to pyarrow Table and write to Parquet
-                table = pa.Table.from_pandas(combined_df)
-                pq.write_table(table, output_file)
-                print(f"Successfully appended: {input_file} -> {output_file}")
-            except Exception as e:
-                print(f"Error reading existing Parquet file: {e}")
-                print("Creating a new Parquet file instead.")
-                table = pa.Table.from_pandas(df)
-                pq.write_table(table, output_file)
-                print(f"Successfully created: {input_file} -> {output_file}")
+            # Read existing Parquet file
+            existing_table = pq.read_table(output_file)
+            
+            # Append new data to existing table
+            combined_table = pa.concat_tables([existing_table, table])
+            
+            # Write combined table to Parquet
+            pq.write_table(combined_table, output_file)
+            print(f"Appended data to existing Parquet file: {output_file}")
         else:
-            # Convert to pyarrow Table and write to Parquet
-            table = pa.Table.from_pandas(df)
+            # Write new table to Parquet
             pq.write_table(table, output_file)
-            print(f"Successfully created: {input_file} -> {output_file}")
-    
+            print(f"Created new Parquet file: {output_file}")
+        
+        print(f"Successfully processed: {input_file} -> {output_file}")
     except Exception as e:
-        print(f"Error converting {input_file}: {str(e)}")
+        print(f"Error processing {input_file}: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
 
 # Set the input and output directories
