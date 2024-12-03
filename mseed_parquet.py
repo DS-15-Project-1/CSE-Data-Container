@@ -14,11 +14,6 @@ def convert_file_to_parquet(input_file, output_file):
         print(f"File exists: {os.path.exists(input_file)}")
         print(f"Is file: {os.path.isfile(input_file)}")
         
-        # Check file contents
-        if open(input_file, 'rb') in f:
-            print(f"File size: {os.path.getsize(input_file)} bytes")
-            print(f"First few bytes: {f.read(20)}")
-        
         # Read the file
         st = read(input_file)
         print(f"Successfully read: {input_file}")
