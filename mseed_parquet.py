@@ -1,8 +1,6 @@
 import os
 from obspy import read
 import pandas as pd
-import pyarrow as pa
-import pyarrow.parquet as pq
 import traceback
 
 def convert_file_to_parquet(input_file, output_file):
@@ -33,11 +31,6 @@ def convert_file_to_parquet(input_file, output_file):
         start_time = st[0].stats.starttime.isoformat()
         end_time = st[0].stats.endtime.isoformat()
         sampling_rate = st[0].stats.sampling_rate
-
-def convert_file_to_parquet(input_file, output_file):
-    print(f"Attempting to convert: {input_file}")
-    try:
-        # ... (previous code remains unchanged)
 
         # Create DataFrame
         df = pd.DataFrame({
