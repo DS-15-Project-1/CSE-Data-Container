@@ -27,7 +27,7 @@ def convert_file_to_parquet(input_file, output_file):
             return False
         
         # Read the file
-        st = read(input_file, headonly=False)  # Changed to False to read full data
+        st = read(input_file, headonly=False)
         logger.info(f"Successfully read: {input_file}")
         
         # Extract metadata
@@ -42,17 +42,18 @@ def convert_file_to_parquet(input_file, output_file):
         
         # Read data in chunks
         for i in tqdm(range(0, len(st[0]), chunk_size), desc=f"Processing {input_file}"):
-            chunk = st[i:i+chunk_size]
+            chunk = st.slice(starttime=st[0].stats.starttime + i / sampling_rate,
+                             endtime=st[0].stats.starttime + (i + chunk_size) / sampling_rate)
             
             df = pd.DataFrame({
                 'network': [network],
                 'station': [station],
                 'location': [location],
                 'channel': [channel],
-                'starttime': [chunk.stats.starttime.isoformat()],
-                'endtime': [chunk.stats.endtime.isoformat()],
+                'starttime': [chunk[0].stats.starttime.isoformat()],
+                'endtime': [chunk[0].stats.endtime.isoformat()],
                 'sampling_rate': [sampling_rate],
-                'data': [chunk.data]
+                'data': [chunk[0].data]
             })
             
             # Convert DataFrame to PyArrow Table
