@@ -31,13 +31,15 @@ def convert_file_to_parquet(input_file, output_file):
         end_time = st[0].stats.endtime.isoformat()
         sampling_rate = st[0].stats.sampling_rate
         
+        # Calculate chunk size
+        chunk_size = int(3600 * sampling_rate)  # 1 hour of data, rounded to nearest integer
+        
         # Read data in chunks
-        chunk_size = 3600 * sampling_rate  # 1 hour of data
-        for i in range(0, len(st[0]), chunk_size):
+        for i in range(0, int(len(st[0])), chunk_size):
             chunk = st.slice(starttime=st[0].stats.starttime + i / sampling_rate,
                              endtime=st[0].stats.starttime + (i + chunk_size) / sampling_rate)
             
-            # Create DataFrame
+        # Create DataFrame
             df = pd.DataFrame({
                 'network': [network],
                 'station': [station],
@@ -76,8 +78,6 @@ def convert_file_to_parquet(input_file, output_file):
         print(f"Error processing {input_file}: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
         print(f"Skipping {input_file} and continuing with next file...")
-
-
         
      # Set the input and output directories
 input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019"
