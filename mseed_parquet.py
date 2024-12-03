@@ -56,7 +56,7 @@ def convert_file_to_parquet(input_file, output_file):
             
             # Write combined data to Parquet
             table = pa.Table.from_pandas(combined_df)
-            pq.write_table(table, output_file)
+            pd.to_parquet(table, output_file)
             print(f"Successfully appended: {input_file} -> {output_file}")
         else:
             # Write new data to Parquet
