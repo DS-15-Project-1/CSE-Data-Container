@@ -34,6 +34,11 @@ def convert_file_to_parquet(input_file, output_file):
         end_time = st[0].stats.endtime.isoformat()
         sampling_rate = st[0].stats.sampling_rate
 
+def convert_file_to_parquet(input_file, output_file):
+    print(f"Attempting to convert: {input_file}")
+    try:
+        # ... (previous code remains unchanged)
+
         # Create DataFrame
         df = pd.DataFrame({
             'network': [network],
@@ -45,8 +50,8 @@ def convert_file_to_parquet(input_file, output_file):
             'sampling_rate': [sampling_rate],
             'data': [st[0].data]
         })
-        
-                # Check if the output file already exists
+
+        # Check if the output file already exists
         if os.path.exists(output_file):
             # Read existing data
             existing_df = pd.read_parquet(output_file)
@@ -55,14 +60,13 @@ def convert_file_to_parquet(input_file, output_file):
             combined_df = pd.concat([existing_df, df], ignore_index=True)
             
             # Write combined data to Parquet
-            table = pa.Table.from_pandas(combined_df)
-            pd.to_parquet(table, output_file)
+            combined_df.to_parquet(output_file)
             print(f"Successfully appended: {input_file} -> {output_file}")
         else:
             # Write new data to Parquet
-            table = pa.Table.from_pandas(df)
-            pq.write_table(table, output_file)
+            df.to_parquet(output_file)
             print(f"Successfully created: {input_file} -> {output_file}")
+
     except Exception as e:
         print(f"Error converting {input_file}: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
