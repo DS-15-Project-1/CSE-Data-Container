@@ -33,6 +33,7 @@ def convert_file_to_parquet(input_file, output_file):
         start_time = st[0].stats.starttime.isoformat()
         end_time = st[0].stats.endtime.isoformat()
         sampling_rate = st[0].stats.sampling_rate
+        timestamp = st[0].stats.timestamp
 
         # Create DataFrame
         df = pd.DataFrame({
@@ -43,7 +44,8 @@ def convert_file_to_parquet(input_file, output_file):
             'starttime': [start_time],
             'endtime': [end_time],
             'sampling_rate': [sampling_rate],
-            'data': [st[0].data]
+            'data': [st[0].data],
+            'timestamp': [timestamp]
         })
         
         # Check if the output file already exists
