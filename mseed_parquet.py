@@ -46,6 +46,28 @@ def convert_file_to_parquet(input_file, output_file):
             'data': [st[0].data]
         })
         
+                # Check if the output file already exists
+        if os.path.exists(output_file):
+            # Read existing data
+            existing_table = pq.read_table(output_file)
+            existing_df = existing_table.to_pandas()
+            
+            # Append new data to existing data
+            combined_df = pd.concat([existing_df, df], ignore_index=True)
+            
+            # Write combined data to Parquet
+            table = pa.Table.from_pandas(combined_df)
+            pq.write_table(table, output_file)
+            print(f"Successfully appended: {input_file} -> {output_file}")
+        else:
+            # Write new data to Parquet
+            table = pa.Table.from_pandas(df)
+            pq.write_table(table, output_file)
+            print(f"Successfully created: {input_file} -> {output_file}")
+    except Exception as e:
+        print(f"Error converting {input_file}: {str(e)}")
+        print(f"Traceback: {traceback.format_exc()}")
+        
         # Write to Parquet
         table = pa.Table.from_pandas(df)
         pq.write_table(table, output_file)
