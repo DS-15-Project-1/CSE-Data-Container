@@ -7,7 +7,7 @@ import traceback
 
 def convert_file_to_parquet(input_file, output_file):
     print(f"Attempting to convert: {input_file}")
-    for i in range(3):
+    for f in open(input_file, 'rb'):
         # Debug logging
         print(f"Input file: {input_file}")
         print(f"Output file: {output_file}")
