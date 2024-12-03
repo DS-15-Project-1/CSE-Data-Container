@@ -7,7 +7,7 @@ import traceback
 import gc
 from tqdm import tqdm
 import time
-import logging
+import logger
 
 input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019"
 output_dir = "/mnt/code/output"
