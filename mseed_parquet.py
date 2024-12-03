@@ -55,17 +55,20 @@ def convert_file_to_parquet(input_file, output_file):
                 # Append new data to existing data
                 combined_df = pd.concat([existing_df, df], ignore_index=True)
                 
-                # Write combined data to Parquet
-                combined_df.to_parquet(output_file)
+                # Convert to pyarrow Table and write to Parquet
+                table = pa.Table.from_pandas(combined_df)
+                pq.write_table(table, output_file)
                 print(f"Successfully appended: {input_file} -> {output_file}")
             except Exception as e:
                 print(f"Error reading existing Parquet file: {e}")
                 print("Creating a new Parquet file instead.")
-                df.to_parquet(output_file)
+                table = pa.Table.from_pandas(df)
+                pq.write_table(table, output_file)
                 print(f"Successfully created: {input_file} -> {output_file}")
         else:
-            # Write new data to Parquet
-            df.to_parquet(output_file)
+            # Convert to pyarrow Table and write to Parquet
+            table = pa.Table.from_pandas(df)
+            pq.write_table(table, output_file)
             print(f"Successfully created: {input_file} -> {output_file}")
     
     except Exception as e:
