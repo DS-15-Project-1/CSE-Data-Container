@@ -83,7 +83,7 @@ def process_directory(directory_path, input_dir, output_dir):
     
     successful_conversions = 0
     failed_conversions = 0
-    
+        
     for rel_path, file in tqdm(dir_files, desc=f"Processing directory {directory_path}"):
         input_file = os.path.join(input_dir, rel_path, file)
         
