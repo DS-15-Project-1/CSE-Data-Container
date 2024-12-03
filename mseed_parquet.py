@@ -54,7 +54,6 @@ def convert_file_to_parquet(input_file, output_file):
         
         # Check if output file exists
         if os.path.exists(output_file):
-            try:
                 # Read existing Parquet file
                 existing_table = pq.read_table(output_file)
                 
@@ -64,11 +63,6 @@ def convert_file_to_parquet(input_file, output_file):
                 # Write combined table to Parquet
                 pq.write_table(combined_table, output_file)
                 print(f"Appended data to existing Parquet file: {output_file}")
-            except Exception as e:
-                print(f"Error appending to existing Parquet file {output_file}: {str(e)}")
-                print(f"Falling back to creating a new Parquet file...")
-                pq.write_table(table, output_file)
-                print(f"Created new Parquet file: {output_file}")
         else:
             # Write new table to Parquet
             pq.write_table(table, output_file)
