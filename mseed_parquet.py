@@ -154,4 +154,7 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error(f"An unexpected error occurred: {str(e)}")
         logger.error(f"Traceback: {traceback.format_exc()}")
+        logger.info(f"Contents of output directory: {os.listdir('/mnt/code/output/HHZ.D')}")
         sys.exit(1)
+        
+        
