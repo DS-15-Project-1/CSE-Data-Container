@@ -9,9 +9,12 @@ from tqdm import tqdm
 import time
 import logging
 
-# Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+logger.info("Starting mseed_parquet.py")
+logger.info(f"Current working directory: {os.getcwd()}")
+logger.info(f"Contents of current directory: {os.listdir('.')}")
 
 def convert_file_to_parquet(input_file, output_file):
     logger.info(f"Attempting to convert: {input_file}")
