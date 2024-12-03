@@ -14,36 +14,6 @@ import sys
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-logger.info(f"Contents of /mnt: {os.listdir('/mnt')}")
-logger.info(f"Contents of /mnt/data: {os.listdir('/mnt/data')}")
-logger.info(f"Contents of /mnt/data/SWP_Seismic_Database_Current: {os.listdir('/mnt/data/SWP_Seismic_Database_Current')}")
-
-input_dir = "/mnt/data/SWP_Seismic_Database_Current"
-output_dir = "/mnt/code/output"
-
-logger.info(f"Input directory: {input_dir}")
-logger.info(f"Output directory: {output_dir}")
-
-if not os.path.exists(input_dir):
-    logger.error(f"Input directory does not exist: {input_dir}")
-    logger.info(f"Contents of /mnt: {os.listdir('/mnt')}")
-    logger.info(f"Contents of /mnt/data: {os.listdir('/mnt/data')}")
-    sys.exit(1)
-
-# Find the correct subdirectory
-subdirectories = [name for name in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir, name))]
-logger.info(f"Subdirectories found: {subdirectories}")
-
-if not subdirectories:
-    logger.warning("No subdirectories found in the input directory")
-    logger.info("Attempting to process files directly in the input directory")
-    process_directory("", input_dir, output_dir)
-else:
-    # Process each subdirectory
-    for subdir in subdirectories:
-        process_directory(subdir, input_dir, output_dir)
-logger.info(f"Contents of input directory: {os.listdir(input_dir)}")
-
 def convert_file_to_parquet(input_file, output_file):
     logger.info(f"Attempting to convert: {input_file}")
     
@@ -112,7 +82,7 @@ def convert_file_to_parquet(input_file, output_file):
         logger.error(f"Traceback: {traceback.format_exc()}")
         logger.warning(f"Skipping {input_file} and continuing with next file...")
         return False
-    
+
 def process_directory(directory_path, input_dir, output_dir):
     batch_start_time = time.time()
     
@@ -148,3 +118,41 @@ def process_directory(directory_path, input_dir, output_dir):
     batch_duration = batch_end_time - batch_start_time
     logger.info(f"Directory {directory_path} processed in {batch_duration:.2f} seconds")
     logger.info(f"Successful conversions: {successful_conversions}, Failed conversions: {failed_conversions}")
+
+if __name__ == "__main__":
+    try:
+        logger.info(f"Contents of /mnt: {os.listdir('/mnt')}")
+        logger.info(f"Contents of /mnt/data: {os.listdir('/mnt/data')}")
+        logger.info(f"Contents of /mnt/data/SWP_Seismic_Database_Current: {os.listdir('/mnt/data/SWP_Seismic_Database_Current')}")
+
+        input_dir = "/mnt/data/SWP_Seismic_Database_Current"
+        output_dir = "/mnt/code/output"
+
+        logger.info(f"Input directory: {input_dir}")
+        logger.info(f"Output directory: {output_dir}")
+
+        if not os.path.exists(input_dir):
+            logger.error(f"Input directory does not exist: {input_dir}")
+            logger.info(f"Contents of /mnt: {os.listdir('/mnt')}")
+            logger.info(f"Contents of /mnt/data: {os.listdir('/mnt/data')}")
+            sys.exit(1)
+
+        # Find the correct subdirectory
+        subdirectories = [name for name in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir, name))]
+        logger.info(f"Subdirectories found: {subdirectories}")
+
+        if not subdirectories:
+            logger.warning("No subdirectories found in the input directory")
+            logger.info("Attempting to process files directly in the input directory")
+            process_directory("", input_dir, output_dir)
+        else:
+            # Process each subdirectory
+            for subdir in subdirectories:
+                process_directory(subdir, input_dir, output_dir)
+
+        logger.info(f"Contents of input directory: {os.listdir(input_dir)}")
+        logger.info("Conversion complete!")
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {str(e)}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        sys.exit(1)
