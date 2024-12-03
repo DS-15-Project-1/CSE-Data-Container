@@ -18,7 +18,7 @@ logger.info(f"Contents of /mnt: {os.listdir('/mnt')}")
 logger.info(f"Contents of /mnt/data: {os.listdir('/mnt/data')}")
 logger.info(f"Contents of /mnt/data/SWP_Seismic_Database_Current: {os.listdir('/mnt/data/SWP_Seismic_Database_Current')}")
 
-input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ/FWU1/"
+input_dir = "/mnt/data/SWP_Seismic_Database_Current"
 output_dir = "/mnt/code/output"
 
 logger.info(f"Input directory: {input_dir}")
@@ -27,12 +27,21 @@ logger.info(f"Output directory: {output_dir}")
 if not os.path.exists(input_dir):
     logger.error(f"Input directory does not exist: {input_dir}")
     logger.info(f"Contents of /mnt: {os.listdir('/mnt')}")
+    logger.info(f"Contents of /mnt/data: {os.listdir('/mnt/data')}")
     sys.exit(1)
 
-if not os.path.exists(output_dir):
-    logger.warning(f"Output directory does not exist, creating it: {output_dir}")
-    os.makedirs(output_dir, exist_ok=True)
+# Find the correct subdirectory
+subdirectories = [name for name in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir, name))]
+logger.info(f"Subdirectories found: {subdirectories}")
 
+if not subdirectories:
+    logger.warning("No subdirectories found in the input directory")
+    logger.info("Attempting to process files directly in the input directory")
+    process_directory("", input_dir, output_dir)
+else:
+    # Process each subdirectory
+    for subdir in subdirectories:
+        process_directory(subdir, input_dir, output_dir)
 logger.info(f"Contents of input directory: {os.listdir(input_dir)}")
 
 def convert_file_to_parquet(input_file, output_file):
