@@ -66,7 +66,7 @@ def convert_file_to_parquet(input_file, output_file):
         
         # Write to Parquet
         table = pa.Table.from_pandas(df)
-        pq.write_table(table, output_file)
+        pd.write_table(table, output_file)
         print(f"Successfully converted: {input_file} -> {output_file}")
     except Exception as e:
         print(f"Error converting {input_file}: {str(e)}")
