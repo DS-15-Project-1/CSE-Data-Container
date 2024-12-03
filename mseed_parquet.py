@@ -13,6 +13,10 @@ import sys
 import signal
 
 # Set up logging
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 def convert_file_to_parquet(input_file, output_file):
     logger.info(f"Attempting to convert: {input_file}")
     
