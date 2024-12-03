@@ -30,9 +30,10 @@ def convert_file_to_parquet(input_file, output_file):
         station = st[0].stats.station
         location = st[0].stats.location
         channel = st[0].stats.channel
-        start_time = st[0].stats.starttime.isoformat()
-        end_time = st[0].stats.endtime.isoformat()
+        start_time = st[0].stats.starttime
+        end_time = st[0].stats.endtime
         sampling_rate = st[0].stats.sampling_rate
+        num_samples = len(st[0].data)
 
         # Create DataFrame
         df = pd.DataFrame({
@@ -40,9 +41,10 @@ def convert_file_to_parquet(input_file, output_file):
             'station': [station],
             'location': [location],
             'channel': [channel],
-            'starttime': [start_time],
-            'endtime': [end_time],
+            'starttime': [start_time.isoformat()],
+            'endtime': [end_time.isoformat()],
             'sampling_rate': [sampling_rate],
+            'num_samples': [num_samples],
             'data': [st[0].data]
         })
         
