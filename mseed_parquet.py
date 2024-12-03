@@ -125,7 +125,7 @@ if __name__ == "__main__":
         logger.info(f"Contents of /mnt/data: {os.listdir('/mnt/data')}")
         logger.info(f"Contents of /mnt/data/SWP_Seismic_Database_Current: {os.listdir('/mnt/data/SWP_Seismic_Database_Current')}")
 
-        input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ/FWU1/"
+        input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ/FWU1/HHE.D"
         output_dir = "/mnt/code/output"
 
         logger.info(f"Input directory: {input_dir}")
