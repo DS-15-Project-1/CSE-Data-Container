@@ -15,17 +15,6 @@ import signal
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-def signal_handler(sig, frame):
-    if sig == signal.SIGILL:
-        logger.error("Received SIGILL. This might indicate a compatibility issue.")
-    else:
-        logger.warning(f"Received signal {sig}. Attempting to clean up...")
-    sys.exit(0)
-
-signal.signal(signal.SIGINT, signal_handler)
-signal.signal(signal.SIGTERM, signal_handler)
-signal.signal(signal.SIGILL, signal_handler)
-
 def convert_file_to_parquet(input_file, output_file):
     logger.info(f"Attempting to convert: {input_file}")
     
@@ -39,6 +28,7 @@ def convert_file_to_parquet(input_file, output_file):
             return False
         
         # Read the file
+        logger.info(f"Starting to read file: {input_file}")
         st = read(input_file, headonly=False)
         logger.info(f"Successfully read: {input_file}")
         
@@ -52,55 +42,23 @@ def convert_file_to_parquet(input_file, output_file):
         channel = st[0].stats.channel
         sampling_rate = st[0].stats.sampling_rate
         
-        # Calculate chunk size
-        chunk_size = int(3600 * sampling_rate)  # 1 hour of data, rounded to nearest integer
+        logger.info(f"Creating DataFrame")
+        df = pd.DataFrame({
+            'network': [network],
+            'station': [station],
+            'location': [location],
+            'channel': [channel],
+            'starttime': [st[0].stats.starttime.isoformat()],
+            'endtime': [st[0].stats.endtime.isoformat()],
+            'sampling_rate': [sampling_rate],
+            'data': [st[0].data]
+        })
         
-        total_chunks = len(st[0]) // chunk_size + 1
-        logger.info(f"Total chunks to process: {total_chunks}")
+        logger.info(f"Converting DataFrame to PyArrow Table")
+        table = pa.Table.from_pandas(df)
         
-        # Read data in chunks
-        for i in tqdm(range(0, len(st[0]), chunk_size), desc=f"Processing {input_file}", total=total_chunks):
-            try:
-                chunk = st.slice(starttime=st[0].stats.starttime + i / sampling_rate,
-                                 endtime=st[0].stats.starttime + (i + chunk_size) / sampling_rate)
-                
-                df = pd.DataFrame({
-                    'network': [network],
-                    'station': [station],
-                    'location': [location],
-                    'channel': [channel],
-                    'starttime': [chunk[0].stats.starttime.isoformat()],
-                    'endtime': [chunk[0].stats.endtime.isoformat()],
-                    'sampling_rate': [sampling_rate],
-                    'data': [chunk[0].data]
-                })
-                
-                # Convert DataFrame to PyArrow Table
-                table = pa.Table.from_pandas(df)
-                
-                # Check if output file exists
-                if os.path.exists(output_file):
-                    # Read existing Parquet file
-                    existing_table = pq.read_table(output_file)
-                    
-                    # Append new data to existing table
-                    combined_table = pa.concat_tables([existing_table, table])
-                    
-                    # Write combined table to Parquet
-                    pq.write_table(combined_table, output_file)
-                else:
-                    # Write new table to Parquet
-                    pq.write_table(table, output_file)
-                
-                del df, table, chunk
-                gc.collect()
-                
-                logger.info(f"Processed chunk {i // chunk_size + 1}/{total_chunks}")
-            
-            except Exception as e:
-                logger.error(f"Error processing chunk {i} of {input_file}: {str(e)}")
-                logger.error(f"Traceback: {traceback.format_exc()}")
-                continue
+        logger.info(f"Writing table to Parquet")
+        pq.write_table(table, output_file)
         
         logger.info(f"Successfully processed: {input_file} -> {output_file}")
         return True
