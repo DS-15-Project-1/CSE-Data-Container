@@ -182,10 +182,10 @@ if __name__ == "__main__":
         if not subdirectories:
             logger.warning("No subdirectories found in the input directory")
             logger.info("Attempting to process files directly in the input directory")
-            process_directory("", input_dir, output_dir)
+            process_directory(sftp_client, "", input_dir, output_dir)
         else:
             for subdir in tqdm(subdirectories, desc="Processing subdirectories"):
-                process_directory(subdir, input_dir, output_dir)
+                process_directory(sftp_client, subdir, input_dir, output_dir)
 
         logger.info(f"Contents of input directory: {sftp_client.listdir(input_dir)}")
         logger.info("Conversion complete!")
@@ -198,16 +198,3 @@ if __name__ == "__main__":
 
     finally:
         disconnect_sftp(ssh_client, sftp_client)
-
-if tables:
-    combined_table = pa.concat_tables(tables)
-    output_file = os.path.join(output_dir, directory_path, f"{directory_path}.parquet")
-    buffer = io.BytesIO()
-    pq.write_table(combined_table, buffer)
-    buffer.seek(0)
-    write_remote_file(sftp_client, buffer.getvalue(), output_file)
-    logger.info(f"Successfully wrote combined data to: {output_file}")
-
-    # Remove partial files
-    remove_partial_files(sftp_client, directory_path, output_dir)
-    logger.info(f"Removed partial files for directory: {directory_path}")
