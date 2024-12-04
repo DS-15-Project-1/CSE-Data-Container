@@ -27,4 +27,4 @@ RUN python -m pip install \
 
 COPY convert_data.py /app/convert_data.py
 
-CMD ["python", "convert_data.py"]
+CMD ["python", "mseed_parquet.py"]
