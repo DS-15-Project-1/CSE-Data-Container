@@ -17,14 +17,8 @@ RUN python -m pip install \
     pandas \
     pyarrow \
     numpy \
-    matplotlib \
-    scipy \
-    nltk \
-    ipython \
-    ipykernel \
     paramiko \
-    tqdm \
-    && python -m nltk.downloader wordnet punkt stopwords
+    tqdm 
 
 COPY mseed_parquet.py /app/mseed_parquet.py
 
