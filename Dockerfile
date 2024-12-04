@@ -26,6 +26,6 @@ RUN python -m pip install \
     tqdm \
     && python -m nltk.downloader wordnet punkt stopwords
 
-COPY convert_data.py /app/mseed_parquet.py
+COPY mseed_parquet.py /app/mseed_parquet.py
 
 CMD ["python", "mseed_parquet.py"]
