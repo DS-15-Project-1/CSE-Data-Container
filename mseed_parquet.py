@@ -161,7 +161,7 @@ if __name__ == "__main__":
 
         ssh_client, sftp_client = connect_sftp(hostname, username, password)
 
-        input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ/FWU1/HHE.D"
+        input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ/FWU1/"
         output_dir = "/mnt/code/output"
 
         logger.info(f"Input directory: {input_dir}")
