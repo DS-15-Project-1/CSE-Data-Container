@@ -12,7 +12,6 @@ services:
   converter:
     build:
       context: .
-      dockerfile: Dockerfile.converter
     container_name: "seismic-converter"
     volumes:
       - /mnt/:/mnt/
