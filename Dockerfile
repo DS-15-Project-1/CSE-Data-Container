@@ -1,24 +1,30 @@
-# Start with a Python base image
-FROM python:3.12-slim
+FROM python:3.12-bullseye
 
-# Set environment variables
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Set the working directory
 WORKDIR /app
 
-# Upgrade pip and install wheel
-RUN python -m pip install --upgrade pip wheel setuptools
+RUN apt-get update && apt-get install -y \
+    libssl-dev \
+    zlib1g-dev \
+    libbz2-dev \
+    libarchive13 \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install required Python packages
-RUN pip install --no-cache-dir \
+RUN python -m pip install --upgrade pip && \
+    python -m pip install wheel
+
+RUN python -m pip install \
     obspy \
     pandas \
     pyarrow \
-    tqdm
+    numpy \
+    matplotlib \
+    scipy \
+    nltk \
+    ipython \
+    ipykernel \
+    paramiko \
+    && python -m nltk.downloader wordnet punkt stopwords
 
-# Copy the conversion script
-COPY mseed_parquet.py /app/mseed_parquet.py
+COPY convert_data.py /app/convert_data.py
 
-# Set the default command to run when starting the container
-CMD ["python", "/app/mseed_parquet.py"]
+CMD ["python", "convert_data.py"]

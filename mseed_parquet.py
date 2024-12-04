@@ -1,5 +1,5 @@
-
-import os
+import paramiko
+import io
 from obspy import read
 import pandas as pd
 import pyarrow as pa
@@ -11,30 +11,44 @@ import time
 import logging
 import sys
 import signal
+import os
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-def convert_file_to_parquet(input_file):
+def connect_sftp(hostname, username, key_filename, passphrase):
+    ssh_key = paramiko.RSAKey.from_private_key_file(key_filename, password=passphrase)
+    ssh_client = paramiko.SSHClient()
+    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh_client.connect(hostname=hostname, username=username, pkey=ssh_key)
+    sftp_client = ssh_client.open_sftp()
+    return ssh_client, sftp_client
+
+def disconnect_sftp(ssh_client, sftp_client):
+    sftp_client.close()
+    ssh_client.close()
+
+def read_remote_file(sftp_client, remote_path):
+    with sftp_client.open(remote_path, 'rb') as file:
+        content = file.read()
+    return io.BytesIO(content)
+
+def write_remote_file(sftp_client, local_content, remote_path):
+    with sftp_client.open(remote_path, 'wb') as file:
+        file.write(local_content)
+
+def convert_file_to_parquet(sftp_client, input_file):
     logger.info(f"Attempting to convert: {input_file}")
     
     try:
-        # Get file size
-        file_size = os.path.getsize(input_file)
-        logger.info(f"File size: {file_size} bytes")
-        
-        if file_size > 1024 * 1024 * 1024:  # 1 GB limit
-            logger.warning(f"File too large ({file_size} bytes), skipping: {input_file}")
-            return None
+        # Read the file remotely
+        file_content = read_remote_file(sftp_client, input_file)
         
         # Read the file
         logger.info(f"Starting to read file: {input_file}")
-        st = read(input_file, headonly=False)
+        st = read(file_content, headonly=False)
         logger.info(f"Successfully read: {input_file}")
-        
-        # Log additional information about the stream
-        logger.info(f"Stream info: {st}")
         
         # Extract metadata
         network = st[0].stats.network
@@ -67,11 +81,11 @@ def convert_file_to_parquet(input_file):
         logger.warning(f"Skipping {input_file} and continuing with next file...")
         return None
 
-def process_directory(directory_path, input_dir, output_dir):
+def process_directory(sftp_client, directory_path, input_dir, output_dir):
     batch_start_time = time.time()
     
     dir_files = []
-    for root, _, files in os.walk(os.path.join(input_dir, directory_path)):
+    for root, _, files in sftp_client.listdir_attr(os.path.join(input_dir, directory_path)):
         for file in files:
             rel_path = os.path.relpath(root, input_dir)
             dir_files.append((rel_path, file))
@@ -81,14 +95,11 @@ def process_directory(directory_path, input_dir, output_dir):
     successful_conversions = 0
     failed_conversions = 0
     
-    output_file = os.path.join(output_dir, directory_path, f"{directory_path}.parquet")
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    
     tables = []
     for rel_path, file in tqdm(dir_files, desc=f"Processing directory {directory_path}"):
         input_file = os.path.join(input_dir, rel_path, file)
         
-        table = convert_file_to_parquet(input_file)
+        table = convert_file_to_parquet(sftp_client, input_file)
         
         if table is not None:
             tables.append(table)
@@ -98,7 +109,14 @@ def process_directory(directory_path, input_dir, output_dir):
             if successful_conversions % 10 == 0:
                 partial_output_file = os.path.join(output_dir, directory_path, f"{directory_path}_partial_{successful_conversions}.parquet")
                 partial_combined_table = pa.concat_tables(tables)
-                pq.write_table(partial_combined_table, partial_output_file)
+                
+                # Convert table to bytes
+                buffer = io.BytesIO()
+                pq.write_table(partial_combined_table, buffer)
+                buffer.seek(0)
+                
+                # Write to remote server
+                write_remote_file(sftp_client, buffer.getvalue(), partial_output_file)
                 logger.info(f"Wrote partial results to: {partial_output_file}")
             
         else:
@@ -108,36 +126,45 @@ def process_directory(directory_path, input_dir, output_dir):
             logger.critical(f"More than half of the files in {directory_path} failed conversion. Stopping.")
             return
     
-    
     if tables:
         combined_table = pa.concat_tables(tables)
-        pq.write_table(combined_table, output_file)
+        output_file = os.path.join(output_dir, directory_path, f"{directory_path}.parquet")
+        buffer = io.BytesIO()
+        pq.write_table(combined_table, buffer)
+        buffer.seek(0)
+        write_remote_file(sftp_client, buffer.getvalue(), output_file)
         logger.info(f"Successfully wrote combined data to: {output_file}")
     
     batch_end_time = time.time()
     batch_duration = batch_end_time - batch_start_time
     logger.info(f"Directory {directory_path} processed in {batch_duration:.2f} seconds")
     logger.info(f"Successful conversions: {successful_conversions}, Failed conversions: {failed_conversions}")
-    
+
 if __name__ == "__main__":
     try:
-        logger.info(f"Contents of /mnt: {os.listdir('/mnt')}")
-        logger.info(f"Contents of /mnt/data: {os.listdir('/mnt/data')}")
-        logger.info(f"Contents of /mnt/data/SWP_Seismic_Database_Current: {os.listdir('/mnt/data/SWP_Seismic_Database_Current')}")
-
+        hostname = 'your_server_a_hostname_or_ip'
+        username = 'your_username'
+        key_filename = '/path/to/your/private_key'
+        passphrase = 'your_passphrase'
+        
+        ssh_client, sftp_client = connect_sftp(hostname, username, key_filename, passphrase)
+        
         input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ/FWU1/HHE.D"
         output_dir = "/mnt/code/output"
-
+        
         logger.info(f"Input directory: {input_dir}")
         logger.info(f"Output directory: {output_dir}")
-
-        if not os.path.exists(input_dir):
+        
+        # Check if input directory exists remotely
+        try:
+            sftp_client.listdir(input_dir)
+        except IOError:
             logger.error(f"Input directory does not exist: {input_dir}")
-            logger.info(f"Contents of /mnt: {os.listdir('/mnt')}")
-            logger.info(f"Contents of /mnt/data: {os.listdir('/mnt/data')}")
+            logger.info(f"Contents of /mnt: {sftp_client.listdir('/mnt')}")
+            logger.info(f"Contents of /mnt/data: {sftp_client.listdir('/mnt/data')}")
             sys.exit(1)
 
-        subdirectories = [name for name in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir, name))]
+        subdirectories = [name for name in sftp_client.listdir(input_dir) if sftp_client.stat(os.path.join(input_dir, name)).st_mode & 0o40000]
         logger.info(f"Subdirectories found: {subdirectories}")
 
         if not subdirectories:
@@ -148,11 +175,14 @@ if __name__ == "__main__":
             for subdir in tqdm(subdirectories, desc="Processing subdirectories"):
                 process_directory(subdir, input_dir, output_dir)
 
-        logger.info(f"Contents of input directory: {os.listdir(input_dir)}")
+        logger.info(f"Contents of input directory: {sftp_client.listdir(input_dir)}")
         logger.info("Conversion complete!")
-        logger.info(f"Contents of output directory: {os.listdir('/mnt/code/output')}")
+        logger.info(f"Contents of output directory: {sftp_client.listdir('/mnt/code/output')}")
+
     except Exception as e:
         logger.error(f"An unexpected error occurred: {str(e)}")
         logger.error(f"Traceback: {traceback.format_exc()}")
         sys.exit(1)
-        
+    
+    finally:
+        disconnect_sftp(ssh_client, sftp_client)
