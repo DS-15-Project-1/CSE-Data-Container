@@ -12,6 +12,6 @@ services:
   converter:
     build:
       context: .
-    container_name: "seismic-converter"
+    container_name: "mseed-parquet-converter"
     volumes:
       - /mnt/:/mnt/
