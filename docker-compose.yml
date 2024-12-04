@@ -1,9 +1,18 @@
-version: "3"
+version: '3'
+
 services:
-  converter:
+  server:
     build: .
-    container_name: "miniseed-to-parquet-converter"
+    container_name: "parquet-server"
     volumes:
-      - /mnt/:/mnt
-      - /mnt/code/output:/mnt/code/output
-    command: python /app/mseed_parquet.py
+      - /mnt/:/mnt/
+    ports:
+      - "5000:5000"
+
+  converter:
+    build:
+      context: .
+      dockerfile: Dockerfile.converter
+    container_name: "seismic-converter"
+    volumes:
+      - /mnt/:/mnt/

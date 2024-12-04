@@ -17,11 +17,10 @@ import os
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-def connect_sftp(hostname, username, key_filename, passphrase):
-    ssh_key = paramiko.RSAKey.from_private_key_file(key_filename, password=passphrase)
+def connect_sftp(hostname, username, password):
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh_client.connect(hostname=hostname, username=username, pkey=ssh_key)
+    ssh_client.connect(hostname=hostname, username=username, password=password)
     sftp_client = ssh_client.open_sftp()
     return ssh_client, sftp_client
 
@@ -37,6 +36,16 @@ def read_remote_file(sftp_client, remote_path):
 def write_remote_file(sftp_client, local_content, remote_path):
     with sftp_client.open(remote_path, 'wb') as file:
         file.write(local_content)
+        
+def remove_partial_files(sftp_client, directory_path, output_dir):
+    partial_files = sftp_client.listdir(os.path.join(output_dir, directory_path))
+    partial_files = [f for f in partial_files if f.startswith(f"{directory_path}_partial_") and f.endswith(".parquet")]
+    
+    for file in partial_files:
+        file_path = os.path.join(output_dir, directory_path, file)
+        sftp_client.remove(file_path)
+        logger.info(f"Removed partial file: {file_path}")
+
 
 def convert_file_to_parquet(sftp_client, input_file):
     logger.info(f"Attempting to convert: {input_file}")
@@ -134,6 +143,10 @@ def process_directory(sftp_client, directory_path, input_dir, output_dir):
         buffer.seek(0)
         write_remote_file(sftp_client, buffer.getvalue(), output_file)
         logger.info(f"Successfully wrote combined data to: {output_file}")
+        
+        # Remove partial files
+        remove_partial_files(sftp_client, directory_path, output_dir)
+        logger.info(f"Removed partial files for directory: {directory_path}")
     
     batch_end_time = time.time()
     batch_duration = batch_end_time - batch_start_time
@@ -142,12 +155,11 @@ def process_directory(sftp_client, directory_path, input_dir, output_dir):
 
 if __name__ == "__main__":
     try:
-        hostname = 'your_server_a_hostname_or_ip'
-        username = 'your_username'
-        key_filename = '/path/to/your/private_key'
-        passphrase = 'your_passphrase'
+        hostname = '129.138.10.44'
+        username = 'rob'
+        password = 'prrc5142'
         
-        ssh_client, sftp_client = connect_sftp(hostname, username, key_filename, passphrase)
+        ssh_client, sftp_client = connect_sftp(hostname, username, password)
         
         input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ/FWU1/HHE.D"
         output_dir = "/mnt/code/output"
@@ -186,3 +198,16 @@ if __name__ == "__main__":
     
     finally:
         disconnect_sftp(ssh_client, sftp_client)
+        
+if tables:
+    combined_table = pa.concat_tables(tables)
+    output_file = os.path.join(output_dir, directory_path, f"{directory_path}.parquet")
+    buffer = io.BytesIO()
+    pq.write_table(combined_table, buffer)
+    buffer.seek(0)
+    write_remote_file(sftp_client, buffer.getvalue(), output_file)
+    logger.info(f"Successfully wrote combined data to: {output_file}")
+    
+    # Remove partial files
+    remove_partial_files(sftp_client, directory_path, output_dir)
+    logger.info(f"Removed partial files for directory: {directory_path}")

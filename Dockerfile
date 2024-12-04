@@ -23,6 +23,7 @@ RUN python -m pip install \
     ipython \
     ipykernel \
     paramiko \
+    tqdm \
     && python -m nltk.downloader wordnet punkt stopwords
 
 COPY convert_data.py /app/convert_data.py
