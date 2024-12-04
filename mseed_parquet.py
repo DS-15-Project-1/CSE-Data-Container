@@ -13,6 +13,7 @@ import logging
 import sys
 import signal
 import os
+import stat
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -93,11 +94,24 @@ def convert_file_to_parquet(sftp_client, input_file):
 def process_directory(sftp_client, directory_path, input_dir, output_dir):
     batch_start_time = time.time()
 
+    full_input_dir = os.path.join(input_dir, directory_path)
+    
+    try:
+        contents = sftp_client.listdir(full_input_dir)
+    except IOError:
+        logger.error(f"Unable to list contents of directory: {full_input_dir}")
+        return
+
     dir_files = []
-    for root, _, files in sftp_client.listdir_attr(os.path.join(input_dir, directory_path)):
-        for file in files:
-            rel_path = os.path.relpath(root, input_dir)
-            dir_files.append((rel_path, file))
+    for item in contents:
+        full_path = os.path.join(full_input_dir, item)
+        try:
+            attr = sftp_client.stat(full_path)
+            if stat.S_ISREG(attr.st_mode):
+                rel_path = os.path.relpath(full_input_dir, input_dir)
+                dir_files.append((rel_path, item))
+        except IOError:
+            logger.warning(f"Unable to stat file: {full_path}")
 
     logger.info(f"Processing directory: {directory_path} with {len(dir_files)} files")
 
@@ -176,7 +190,21 @@ if __name__ == "__main__":
             logger.info(f"Contents of /mnt/data: {sftp_client.listdir('/mnt/data')}")
             sys.exit(1)
 
-        subdirectories = [name for name in sftp_client.listdir(input_dir) if sftp_client.stat(os.path.join(input_dir, name)).st_mode & 0o40000]
+        subdirectories = []
+        try:
+            contents = sftp_client.listdir(input_dir)
+            for item in contents:
+                full_path = os.path.join(input_dir, item)
+                try:
+                    attr = sftp_client.stat(full_path)
+                    if stat.S_ISDIR(attr.st_mode):
+                        subdirectories.append(item)
+                except IOError:
+                    logger.warning(f"Unable to stat item: {full_path}")
+        except IOError:
+            logger.error(f"Unable to list contents of input directory: {input_dir}")
+            sys.exit(1)
+
         logger.info(f"Subdirectories found: {subdirectories}")
 
         if not subdirectories:
@@ -187,9 +215,7 @@ if __name__ == "__main__":
             for subdir in tqdm(subdirectories, desc="Processing subdirectories"):
                 process_directory(sftp_client, subdir, input_dir, output_dir)
 
-        logger.info(f"Contents of input directory: {sftp_client.listdir(input_dir)}")
         logger.info("Conversion complete!")
-        logger.info(f"Contents of output directory: {sftp_client.listdir('/mnt/code/output')}")
 
     except Exception as e:
         logger.error(f"An unexpected error occurred: {str(e)}")
