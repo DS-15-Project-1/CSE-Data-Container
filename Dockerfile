@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
 # RUN zig build-lib -dynamic -fPIC -O ReleaseSafe seismic_processing.zig
 
 # Install Python dependencies
-RUN pip install --no-cache-dir paramiko obspy pandas pyarrow tqdm
+RUN pip install --no-cache-dir paramiko obspy pandas pyarrow==0.17.0 tqdm
 
 WORKDIR /app
 
