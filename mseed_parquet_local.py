@@ -39,7 +39,7 @@ def convert_mseed_to_parquet(input_file, output_file):
         table = pa.Table.from_pandas(df)
         
         # Write to Parquet
-        pq.write_file(table, output_file)
+        pq.write_table(table, output_file)
         
         logger.info(f"Successfully converted {input_file} to {output_file}")
         return True
