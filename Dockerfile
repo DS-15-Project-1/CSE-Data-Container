@@ -12,6 +12,8 @@ RUN pip install --no-cache-dir \
     paramiko \
     obspy \
     pandas \
+    pyarrow \
+    fastparquet \
     tqdm \
     numpy
 
