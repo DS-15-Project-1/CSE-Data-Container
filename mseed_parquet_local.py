@@ -2,8 +2,6 @@ import os
 import io
 from obspy import read
 import pandas as pd
-import pyarrow as pa
-import pyarrow.parquet as pq
 import logging
 from tqdm import tqdm
 
@@ -11,7 +9,7 @@ from tqdm import tqdm
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-def convert_mseed_to_parquet(input_file, output_file):
+def convert_mseed_to_csv(input_file, output_file):
     try:
         # Read the miniSEED file
         st = read(input_file, headonly=False)
@@ -32,14 +30,11 @@ def convert_mseed_to_parquet(input_file, output_file):
             'starttime': [st[0].stats.starttime.isoformat()],
             'endtime': [st[0].stats.endtime.isoformat()],
             'sampling_rate': [sampling_rate],
-            'data': [st[0].data]
+            'data': [st[0].data.tolist()]
         })
         
-        # Convert DataFrame to PyArrow Table
-        table = pa.Table.from_pandas(df)
-        
-        # Write to Parquet
-        pq.write_table(table, output_file)
+        # Write to CSV
+        df.to_csv(output_file, index=False)
         
         logger.info(f"Successfully converted {input_file} to {output_file}")
         return True
@@ -63,10 +58,10 @@ def process_directory(input_dir, output_dir):
             if not os.path.exists(output_file_dir):
                 os.makedirs(output_file_dir)
             
-            # Change the file extension to .parquet
-            output_file = os.path.splitext(output_file)[0] + '.parquet'
+            # Change the file extension to .csv
+            output_file = os.path.splitext(output_file)[0] + '.csv'
             
-            convert_mseed_to_parquet(input_file, output_file)
+            convert_mseed_to_csv(input_file, output_file)
 
 if __name__ == "__main__":
     input_dir = "/mnt/data/"
