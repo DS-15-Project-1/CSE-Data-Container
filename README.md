@@ -7,6 +7,7 @@ This project aims to facilitate the extraction, processing, and analysis of CO2 
 1. Clone the repository
 2. Run `docker-compose up --build`
 3. Clone the repository to your local machine using the command:
+4. 
    ```bash
    git clone https://github.com/DS-15-Project-1/Co2-Sec-Extraction-Container.git
    ```
@@ -14,29 +15,19 @@ This project aims to facilitate the extraction, processing, and analysis of CO2 
 ## Using the Container
 
 1. Dockerfile: Contains the instructions for building the Docker image.
-
 2. docker-compose.yml: Defines the services and configuration for running the container.
+3. data: /mnt/*
+4. .gitignore: Specifies files and directories that Git should ignore.
 
-3. src/main.py: The main Python script that reads miniSEED files and processes them.
+This structure provides a streamlined environment for reading miniSEED files with ObsPy, processing them with pyarrow, and depositing them back on the server via SFTP connection. The container will:
 
-4. nginx/nginx.conf: Configuration file for the Nginx server.
-
-5. data:(TODO) needs specification.
-
-6. .gitignore: Specifies files and directories that Git should ignore.
-
-7. README.md: Project documentation.
-
-This structure provides a streamlined environment for reading miniSEED files with ObsPy, processing them with Dask, and serving the results through Nginx. The container will:
-
-1. Read miniSEED files from the `/app/data/` directory
-2. Process the data using ObsPy and Dask
-3. Save the processed data as a CSV file in the `/app/data/` directory
-4. Serve the CSV file through Nginx
+1. Read miniSEED files from the `/mnt/data/SWP_Database_Container` directory
+2. Process the data using ObsPy and PyArrow
+3. Save the processed data as a CSV file in the `/mnt/code/output` directory
 
 To use this setup:
 
-1. Set mount point on server at `data/` directory.
+1. Set mount point on server at `/mnt/` directory.
 2. Run `docker-compose up --build` to start the container.
-3. The container will read the miniSEED file, convert it to a CSV, and save it in the `/app/data/` directory.
-4. You can access the CSV file through the Nginx server at `http://localhost/processed_data.csv`. (TODO needs specification)
+3. The container will read the miniSEED file, convert it to a parquet file, and save it in the `/mnt/code/output/` directory.
+4. You can access the SFTP server at `[http://localhost](http://129.138.10.44:5000/)`. when the associated project is run (CSE-Paramiko-Connection)
