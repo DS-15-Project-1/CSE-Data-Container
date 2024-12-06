@@ -1,4 +1,5 @@
 import os
+import io
 from obspy import read
 import pandas as pd
 import pyarrow as pa
@@ -51,11 +52,21 @@ def process_directory(input_dir, output_dir):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     
-    for root, _, files in os.walk(input_dir):
-        for file in tqdm(files, desc="Processing files"):
+    for root, dirs, files in os.walk(input_dir):
+        for file in tqdm(files, desc=f"Processing files in {root}", leave=False):
             if file.endswith('.mseed'):
                 input_file = os.path.join(root, file)
-                output_file = os.path.join(output_dir, f"{file[:-6]}.parquet")
+                relative_path = os.path.relpath(input_file, input_dir)
+                output_file = os.path.join(output_dir, relative_path)
+                
+                # Create output directory if it doesn't exist
+                output_file_dir = os.path.dirname(output_file)
+                if not os.path.exists(output_file_dir):
+                    os.makedirs(output_file_dir)
+                
+                # Change the file extension from .mseed to .parquet
+                output_file = os.path.splitext(output_file)[0] + '.parquet'
+                
                 convert_mseed_to_parquet(input_file, output_file)
 
 if __name__ == "__main__":
