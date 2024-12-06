@@ -9,7 +9,7 @@ from tqdm import tqdm
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-def convert_mseed_to_csv(input_file, output_file):
+def convert_mseed_to_parquet(input_file, output_file):
     try:
         # Read the miniSEED file
         st = read(input_file, headonly=False)
@@ -30,11 +30,11 @@ def convert_mseed_to_csv(input_file, output_file):
             'starttime': [st[0].stats.starttime.isoformat()],
             'endtime': [st[0].stats.endtime.isoformat()],
             'sampling_rate': [sampling_rate],
-            'data': [st[0].data.tolist()]
+            'data': [st[0].data.tolist()]  # Convert numpy array to list for compatibility
         })
         
-        # Write to CSV
-        df.to_csv(output_file, index=False)
+        # Write DataFrame to Parquet
+        df.to_parquet(output_file, index=False)
         
         logger.info(f"Successfully converted {input_file} to {output_file}")
         return True
@@ -58,10 +58,10 @@ def process_directory(input_dir, output_dir):
             if not os.path.exists(output_file_dir):
                 os.makedirs(output_file_dir)
             
-            # Change the file extension to .csv
-            output_file = os.path.splitext(output_file)[0] + '.csv'
+            # Change the file extension to .parquet
+            output_file = os.path.splitext(output_file)[0] + '.parquet'
             
-            convert_mseed_to_csv(input_file, output_file)
+            convert_mseed_to_parquet(input_file, output_file)
 
 if __name__ == "__main__":
     input_dir = "/mnt/data/"

@@ -3,13 +3,12 @@ version: '3'
 services:
   server:
     build: .
-    container_name: "parquet-server"
+    container_name: "parquet-conversion"
     volumes:
       - /mnt/:/mnt/
-      - /home/rob/projects/output
+      - /home/rob/projects/output:/app/output
     ports:
       - "5000:5000"
-
   # converter:
   #   build: .
   #   volumes:
