@@ -1,5 +1,4 @@
 import os
-import io
 from obspy import read
 import pandas as pd
 import pyarrow as pa
@@ -60,8 +59,8 @@ def process_directory(input_dir, output_dir):
                 convert_mseed_to_parquet(input_file, output_file)
 
 if __name__ == "__main__":
-    input_dir = "/path/to/your/mseed/files"
-    output_dir = "/path/to/your/output/directory"
+    input_dir = "/mnt/data/"
+    output_dir = "/home/rob/projects/output"
     
     logger.info(f"Input directory: {input_dir}")
     logger.info(f"Output directory: {output_dir}")
