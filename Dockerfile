@@ -1,25 +1,22 @@
-FROM python:3.12-bullseye
+FROM python:3.12-slim-buster
 
-WORKDIR /app
-
+# Install Zig
 RUN apt-get update && apt-get install -y \
-    libssl-dev \
-    zlib1g-dev \
-    libbz2-dev \
-    libarchive13 \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
-RUN python -m pip install --upgrade pip && \
-    python -m pip install wheel
+# RUN wget https://ziglang.org/builds/zig-linux-x86_64-0.9.1-dev.3389+fddbd6bfb.tar.xz | tar xJ -C /usr/local --strip-components 1
 
-RUN python -m pip install \
-    obspy \
-    pandas \
-    pyarrow \
-    numpy \
-    paramiko \
-    tqdm 
+# # Copy Zig source files
+# COPY seismic_processing.zig /
+# COPY setup.py /
 
-COPY mseed_parquet.py /app/mseed_parquet.py
+# # Build Zig library
+# RUN zig build-lib -dynamic -fPIC -O ReleaseSafe seismic_processing.zig
+
+# Install Python dependencies
+RUN pip install --no-cache-dir paramiko obspy pandas pyarrow tqdm
+
+WORKDIR /app
 
 CMD ["python", "mseed_parquet.py"]

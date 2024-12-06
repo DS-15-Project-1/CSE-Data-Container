@@ -1,4 +1,13 @@
 
+import ctypes
+
+# Load the Zig-compiled library
+lib = ctypes.CDLL('./libseismic_processing.so')
+
+# Define the function signature
+lib.process_seismic_data.argtypes = [ctypes.POINTER(ctypes.c_char)]
+lib.process_seismic_data.restype = ctypes.c_size_t
+
 import paramiko
 import io
 from obspy import read

@@ -10,8 +10,9 @@ services:
       - "5000:5000"
 
   converter:
-    build:
-      context: .
-    container_name: "mseed-parquet-converter"
+    build: .
     volumes:
-      - /mnt/:/mnt/
+      - .:/app
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    environment:
+      - DISPLAY=$DISPLAY
