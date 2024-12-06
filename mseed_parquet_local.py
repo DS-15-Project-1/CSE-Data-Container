@@ -70,7 +70,7 @@ def process_directory(input_dir, output_dir):
 
 if __name__ == "__main__":
     input_dir = "/mnt/data/"
-    output_dir = "/home/rob/projects/output"
+    output_dir = "/app/output"
     
     logger.info(f"Input directory: {input_dir}")
     logger.info(f"Output directory: {output_dir}")
