@@ -47,7 +47,6 @@ def process_directory(input_dir, output_dir):
     
     for root, dirs, files in os.walk(input_dir):
         for file in tqdm(files, desc=f"Processing files in {root}", leave=False):
-            if file.startswith('ZZ.') and file.endswith('.D.'):
                 input_file = os.path.join(root, file)
                 relative_path = os.path.relpath(input_file, input_dir)
                 output_file = os.path.join(output_dir, relative_path)
