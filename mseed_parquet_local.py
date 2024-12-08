@@ -64,7 +64,7 @@ def process_directory(input_dir, output_dir):
             convert_mseed_to_parquet(input_file, output_file)
 
 if __name__ == "__main__":
-    input_dir = "/mnt/data/"
+    input_dir = "/mnt/data/f/"
     output_dir = "/app/output"
     
     logger.info(f"Input directory: {input_dir}")

@@ -1,13 +1,5 @@
 
 import ctypes
-
-# Load the Zig-compiled library
-lib = ctypes.CDLL('./libseismic_processing.so')
-
-# Define the function signature
-lib.process_seismic_data.argtypes = [ctypes.POINTER(ctypes.c_char)]
-lib.process_seismic_data.restype = ctypes.c_size_t
-
 import paramiko
 import io
 from obspy import read
@@ -23,6 +15,13 @@ import sys
 import signal
 import os
 import stat
+
+# Load the Zig-compiled library
+lib = ctypes.CDLL('./libseismic_processing.so')
+
+# Define the function signature
+lib.process_seismic_data.argtypes = [ctypes.POINTER(ctypes.c_char)]
+lib.process_seismic_data.restype = ctypes.c_size_t
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -178,14 +177,14 @@ def process_directory(sftp_client, directory_path, input_dir, output_dir):
 
 if __name__ == "__main__":
     try:
-        hostname = '129.138.10.44'
-        username = 'rob'
-        password = 'prrc5142'
+        hostname = '172.17.75.220 '
+        username = 'rsbiixps'
+        password = '689689'
 
         ssh_client, sftp_client = connect_sftp(hostname, username, password)
 
         input_dir = "/mnt/data/SWP_Seismic_Database_Current/2019/ZZ/FWU1/"
-        output_dir = "/mnt/code/output"
+        output_dir = "/mnt/data/output"
 
         logger.info(f"Input directory: {input_dir}")
         logger.info(f"Output directory: {output_dir}")
