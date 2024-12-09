@@ -1,5 +1,4 @@
 import os
-import gc
 from typing import Tuple
 import uuid
 from obspy import read
@@ -26,7 +25,7 @@ def convert_mseed_to_parquet(input_file: str, output_file: str) -> bool:
         location = st[0].stats.location
         channel = st[0].stats.channel
         sampling_rate = st[0].stats.sampling_rate
-
+        
         # Create DataFrame
         df = pd.DataFrame({
             'network': [network],
@@ -38,17 +37,13 @@ def convert_mseed_to_parquet(input_file: str, output_file: str) -> bool:
             'sampling_rate': [sampling_rate],
             'data': [st[0].data.tolist()]  # Convert numpy array to list for compatibility
         })
-
+        
         # Write DataFrame to Parquet
         df.to_parquet(output_file, index=False)
         
-         # Clear memory
-        del df
-        gc.collect()
-        
         logger.info(f"Successfully converted {input_file} to {output_file}")
         return True
-
+    
     except Exception as e:
         logger.error(f"Error processing {input_file}: {str(e)}")
         return False
@@ -99,11 +94,11 @@ def process_directory(input_dir: str, output_dir: str, batch_size: int = 10) -> 
     logger.info(f"Successful conversions: {successful_conversions}")
 
 if __name__ == "__main__":
-    input_dir = "/mnt/f/ZZ_clean/FWU1/HHE.D"
-    output_dir = "/mnt/f/parquet/ZZ/FWU1/HHE.D"
+    input_dir = "/mnt/f/ZB/4/ED1.D"
+    output_dir = "/mnt/f/parquet/ZB/4/ED1.D"
     
     logger.info(f"Input directory: {input_dir}")
     logger.info(f"Output directory: {output_dir}")
     
-    process_directory(input_dir, output_dir, batch_size=10)
+    process_directory(input_dir, output_dir, batch_size=1)
     logger.info("Conversion complete!")

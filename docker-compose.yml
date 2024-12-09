@@ -1,18 +1,44 @@
-version: '3'
+   services:
+     mseed_parquet_local:
+       build: .
+       container_name: "mseed-parquet-local"
+       volumes:
+         - /mnt/:/mnt/
+         - /mnt/f/parquet/:/mnt/f/parquet/
+       ports:
+         - "5000:5000"
+       command: python mseed_parquet_local.py
+       deploy:
+         resources:
+           limits:
+             memory: 2G
 
-services:
-  server:
-    build: .
-    container_name: "parquet-conversion"
-    volumes:
-      - /mnt/:/mnt/
-      - /home/rob/projects/output:/app/output
-    ports:
-      - "5000:5000"
-  # converter:
-  #   build: .
-  #   volumes:
-  #     - .:/app
-  #     - /tmp/.X11-unix:/tmp/.X11-unix
-  #   environment:
-  #     - DISPLAY=$DISPLAY
+
+     mseed_parquet_local_2:
+       build: .
+       container_name: "mseed-parquet-local-2"
+       volumes:
+         - /mnt/:/mnt/
+         - /mnt/f/parquet/:/mnt/f/parquet/
+       ports:
+         - "5001:5000"
+       command: python mseed_parquet_local_2.py
+       deploy:
+         resources:
+           limits:
+             memory: 2G
+
+
+     mseed_parquet_local_3:
+       build: .
+       container_name: "mseed-parquet-local-3"
+       volumes:
+         - /mnt/:/mnt/
+         - /mnt/f/parquet/:/mnt/f/parquet/
+       ports:
+         - "5002:5000"
+       command: python mseed_parquet_local_3.py
+       deploy:
+         resources:
+           limits:
+             memory: 2G
