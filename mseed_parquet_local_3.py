@@ -42,7 +42,7 @@ def convert_mseed_to_parquet(input_file: str, output_file: str) -> bool:
         # Write DataFrame to Parquet
         df.to_parquet(output_file, index=False)
         
-           # Clear memory
+        # Clear memory
         del df
         gc.collect()
         
@@ -99,8 +99,8 @@ def process_directory(input_dir: str, output_dir: str, batch_size: int = 10) -> 
     logger.info(f"Successful conversions: {successful_conversions}")
 
 if __name__ == "__main__":
-    input_dir = "/mnt/f/ZZ_clean/FWU9/"
-    output_dir = "/mnt/f/parquet/ZZ/FWU9/"
+    input_dir = "/media/rsbiim/Extreme\ Pro/ZZ_clean/FWU9"
+    output_dir = "/media/rsbiim/Extreme\ Pro/parquet/ZZ/FWU9"
     
     logger.info(f"Input directory: {input_dir}")
     logger.info(f"Output directory: {output_dir}")

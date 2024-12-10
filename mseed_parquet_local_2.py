@@ -94,8 +94,8 @@ def process_directory(input_dir: str, output_dir: str, batch_size: int = 10) -> 
     logger.info(f"Successful conversions: {successful_conversions}")
 
 if __name__ == "__main__":
-    input_dir = "/mnt/f/ZB/4/ED1.D"
-    output_dir = "/mnt/f/parquet/ZB/4/ED1.D"
+    input_dir = "media/rsbiim/Extreme\ Pro/ZB/4"
+    output_dir = "media/rsbiim/Extreme\ Pro/parquet/ZB/4"
     
     logger.info(f"Input directory: {input_dir}")
     logger.info(f"Output directory: {output_dir}")

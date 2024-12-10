@@ -42,7 +42,7 @@ def convert_mseed_to_parquet(input_file: str, output_file: str) -> bool:
         # Write DataFrame to Parquet
         df.to_parquet(output_file, index=False)
         
-         # Clear memory
+        # Clear memory
         del df
         gc.collect()
         
