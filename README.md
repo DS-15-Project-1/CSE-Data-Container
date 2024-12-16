@@ -19,8 +19,6 @@ This project aims to facilitate the extraction, processing, and analysis of CO2 
 3. data: /mnt/*
 4. .gitignore: Specifies files and directories that Git should ignore.
 
-This structure provides a streamlined environment for reading miniSEED files with ObsPy, processing them with pyarrow, and depositing them back on the server via SFTP connection. The container will:
-
 1. Read miniSEED files from the `/mnt/data/SWP_Database_Container` directory
 2. Process the data using ObsPy and PyArrow
 3. Save the processed data as a CSV file in the `/mnt/code/output` directory
@@ -29,5 +27,4 @@ To use this setup:
 
 1. Set mount point on server at `/mnt/` directory.
 2. Run `docker-compose up --build` to start the container.
-3. The container will read the miniSEED file, convert it to a parquet file, and save it in the `/mnt/code/output/` directory.
-4. You can access the SFTP server at `[http://localhost](http://129.138.10.44:5000/)`. when the associated project is run (CSE-Paramiko-Connection)
+3. The container will read the miniSEED file, convert it to a parquet file, and save it in the desired output directory.
